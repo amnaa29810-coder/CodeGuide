@@ -5,45 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مستشار البرمجة الذكي</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>مستشار البرمجة الذكي 🚀</h1>
+    <div class="app-container">
+        <!-- ترويسة التطبيق -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">🚀</span>
+                <h1>مستشار البرمجة الذكي</h1>
+            </div>
+            <p class="subtitle">دليلك ومساعدك الذكي في عالم ولغات البرمجة</p>
         </header>
 
-        <!-- قسم البحث والذكاء الاصطناعي -->
-        <div class="search-box card">
-            <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
-            <div class="input-group">
-                <input type="text" id="search-input" placeholder="مثال: كيف أبدأ تعلم بايثون؟">
-                <button id="search-btn">بحث</button>
+        <!-- شريط البحث السريع العلوي -->
+        <section class="card search-section">
+            <label for="search-input" class="section-label">🔍 اسأل المستشار الذكي عن أي لغة أو مفهوم:</label>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="مثلاً: ما الفرق بين بايثون وجافا؟">
+                <button id="search-btn" class="btn-primary">بحث</button>
             </div>
-            <div id="ai-response" class="result-box hidden"></div>
-        </div>
+        </section>
 
-        <!-- الأزرار الرئيسية -->
-        <div class="actions">
-            <button id="btn-languages" class="action-btn">📚 موسوعة اللغات</button>
-            <button id="btn-tools" class="action-btn">🛠️ الأدوات البرمجية</button>
-            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 تطبيقات تنفيذ الأكواد</button>
-        </div>
+        <!-- الأزرار الرئيسية الثلاثة -->
+        <section class="action-grid">
+            <button id="btn-languages" class="nav-card">
+                <span class="icon">📚</span>
+                <span class="title">موسوعة اللغات</span>
+            </button>
+            <button id="btn-tools" class="nav-card">
+                <span class="icon">🛠️</span>
+                <span class="title">الأدوات البرمجية</span>
+            </button>
+            <button id="btn-ide-apps" class="nav-card highlight">
+                <span class="icon">📱</span>
+                <span class="title">تطبيقات التنفيذ (IDEs)</span>
+            </button>
+        </section>
 
         <!-- قسم تحليل فكرة المشروع -->
-        <div class="project-planner card">
-            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
-            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك هنا (مثلاً: تطبيق توصيل طلبات، موقع متجر إلكتروني...)"></textarea>
-            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
-            <div id="project-response" class="result-box hidden"></div>
-        </div>
+        <section class="card project-section">
+            <h2 class="section-title">💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
+            <p class="section-desc">اكتب فكرة تطبيقك أو موقعك وسيقترح عليك الذكاء الاصطناعي خطة العمل واللغات المناسبة:</p>
+            <textarea id="project-idea" rows="3" placeholder="اكتب فكرتك هنا (مثلاً: تطبيق حجز مواعيد عيادات، متجر إلكتروني...)"></textarea>
+            <button id="analyze-project-btn" class="btn-primary btn-full">حلل المشروع واقترح التقنيات</button>
+        </section>
 
-        <!-- نافذة عرض اللغات والأدوات والتطبيقات المنبثقة -->
-        <div id="modal" class="modal hidden">
-            <div class="modal-content">
-                <span id="close-modal" class="close-btn">&times;</span>
-                <h2 id="modal-title"></h2>
-                <div id="modal-body"></div>
+        <!-- واجهة النتائج المنبثقة المنفصلة (Popup Modal) -->
+        <div id="modal" class="modal-overlay hidden">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <h3 id="modal-title">النتيجة</h3>
+                    <button id="close-modal" class="modal-close">&times;</button>
+                </div>
+                <div id="modal-body" class="modal-body">
+                    <!-- المحتوى والنتائج تظهر هنا -->
+                </div>
             </div>
         </div>
     </div>
