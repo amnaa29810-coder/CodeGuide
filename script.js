@@ -34,48 +34,59 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
+// دالة عامة لعرض قائمة (لغات/أدوات/تطبيقات) مع صندوق بحث فوقها للفلترة الفورية بالاسم
+function showSearchableList(title, items, renderItem) {
+    const listHtml = items.map(renderItem).join("");
+    const bodyHtml = `
+        <div class="modal-search">
+            <input type="text" id="modal-search-input" placeholder="🔍 ابحث بالاسم...">
+        </div>
+        <div id="modal-list-container">${listHtml}</div>
+    `;
+    showModal(title, bodyHtml);
+
+    const searchEl = document.getElementById("modal-search-input");
+    const listContainer = document.getElementById("modal-list-container");
+
+    searchEl.addEventListener("input", () => {
+        const q = searchEl.value.trim().toLowerCase();
+        const filtered = items.filter(it => it.name.toLowerCase().includes(q));
+        listContainer.innerHTML = filtered.length
+            ? filtered.map(renderItem).join("")
+            : `<p style="text-align:center; color:#64748b; padding:20px;">لم يتم العثور على نتيجة. جرب البحث بالمستشار الذكي في الأعلى.</p>`;
+    });
+}
+
 // 1. زر موسوعة اللغات
 btnLanguages.onclick = () => {
-    let content = "";
-    programmingLanguages.forEach(item => {
-        content += `
-            <div class="info-card">
-                <h4>${item.name}</h4>
-                <p>${item.desc}</p>
-            </div>
-        `;
-    });
-    showModal("📚 موسوعة لغات البرمجة", content);
+    showSearchableList("📚 موسوعة لغات البرمجة", programmingLanguages, item => `
+        <div class="info-card">
+            <h4>${item.name}</h4>
+            <p>${item.desc}</p>
+        </div>
+    `);
 };
 
 // 2. زر الأدوات البرمجية
 btnTools.onclick = () => {
-    let content = "";
-    devTools.forEach(item => {
-        content += `
-            <div class="info-card">
-                <h4>${item.name}</h4>
-                <p>${item.desc}</p>
-            </div>
-        `;
-    });
-    showModal("🛠️ الأدوات البرمجية", content);
+    showSearchableList("🛠️ الأدوات البرمجية", devTools, item => `
+        <div class="info-card">
+            <h4>${item.name}</h4>
+            <p>${item.desc}</p>
+        </div>
+    `);
 };
 
 // 3. زر تطبيقات وبيئات التشغيل (IDEs)
 btnIdeApps.onclick = () => {
-    let content = "";
-    executionApps.forEach(app => {
-        content += `
-            <div class="info-card">
-                <h4>${app.name}</h4>
-                <span class="tag-badge">${app.category}</span>
-                <p style="margin-top:6px;">${app.desc}</p>
-                <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
-            </div>
-        `;
-    });
-    showModal("📱 تطبيقات ومحررات تنفيذ الأكواد", content);
+    showSearchableList("📱 تطبيقات ومحررات تنفيذ الأكواد", executionApps, app => `
+        <div class="info-card">
+            <h4>${app.name}</h4>
+            <span class="tag-badge">${app.category}</span>
+            <p style="margin-top:6px;">${app.desc}</p>
+            <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
+        </div>
+    `);
 };
 
 // دالة تحويل علامات الماركداون لتنسيق نص جميل
@@ -125,6 +136,7 @@ searchBtn.onclick = async () => {
         const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
         const result = await callGemini(prompt);
         modalBody.innerHTML = formatMarkdown(result);
+        searchInput.value = ""; // تفريغ صندوق البحث بعد وصول الإجابة
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
@@ -145,6 +157,7 @@ analyzeProjectBtn.onclick = async () => {
 
         const result = await callGemini(prompt);
         modalBody.innerHTML = formatMarkdown(result);
+        projectIdea.value = ""; // تفريغ صندوق فكرة المشروع بعد وصول الإجابة
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
