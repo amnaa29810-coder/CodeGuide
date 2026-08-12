@@ -84,41 +84,51 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة الاتصال بـ Gemini API مع معالجة النماذج المتوافقة تلقائياً
+// متغير لتخزين اسم النموذج النشط بعد اكتشافه
+let activeModelName = null;
+
+// دالة الاتصال بـ Gemini مع الاكتشاف الذاتي للنموذج المتاح في حسابك
 async function callGemini(promptText) {
-    const endpoints = [
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
-        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`
-    ];
-
-    let lastError = null;
-
-    for (const url of endpoints) {
+    // 1. تحديد النموذج المتاح إن لم يتم تحديده مسبقاً
+    if (!activeModelName) {
         try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }]
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    return data.candidates[0].content.parts[0].text;
+            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+            const listData = await listRes.json();
+            if (listData.models && listData.models.length > 0) {
+                const supportedModel = listData.models.find(m => 
+                    m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
+                );
+                if (supportedModel) {
+                    activeModelName = supportedModel.name; // مثل: models/gemini-2.5-flash أو المتاح
                 }
-            } else {
-                const errJson = await response.json().catch(() => ({}));
-                lastError = errJson.error?.message || response.statusText;
             }
         } catch (e) {
-            lastError = e.message;
+            console.log("Failed to list models, using fallback...");
         }
     }
 
-    throw new Error(lastError || "تعذر الاتصال بالخادم، يرجى التحقق من المفتاح والاتصال.");
+    // النماذج الاحتياطية الأكثر استقراراً في حال تعذر القائمة
+    const targetModel = activeModelName || "models/gemini-2.5-flash";
+    const cleanModelName = targetModel.startsWith("models/") ? targetModel : `models/${targetModel}`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/${cleanModelName}:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+        })
+    });
+
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData.error?.message || "حدث خطأ أثناء معالجة الطلب، تأكد من صلاحية المفتاح.";
+        throw new Error(errMsg);
+    }
+
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
 }
 
 // البحث الذكي من الزر العلوي
