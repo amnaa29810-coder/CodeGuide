@@ -84,51 +84,63 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// متغير لتخزين اسم النموذج النشط بعد اكتشافه
-let activeModelName = null;
-
-// دالة الاتصال بـ Gemini مع الاكتشاف الذاتي للنموذج المتاح في حسابك
+// دالة الاتصال المحدثة بنظام Interactions API الجديد
 async function callGemini(promptText) {
-    // 1. تحديد النموذج المتاح إن لم يتم تحديده مسبقاً
-    if (!activeModelName) {
-        try {
-            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-            const listData = await listRes.json();
-            if (listData.models && listData.models.length > 0) {
-                const supportedModel = listData.models.find(m => 
-                    m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
-                );
-                if (supportedModel) {
-                    activeModelName = supportedModel.name; // مثل: models/gemini-2.5-flash أو المتاح
-                }
+    // المحاولة عبر Interactions API الموصى بها
+    try {
+        const interactionUrl = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${GEMINI_API_KEY}`;
+        const intResponse = await fetch(interactionUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                input: promptText
+            })
+        });
+
+        if (intResponse.ok) {
+            const data = await intResponse.json();
+            if (data.output) return typeof data.output === "string" ? data.output : JSON.stringify(data.output);
+            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
             }
-        } catch (e) {
-            console.log("Failed to list models, using fallback...");
+        }
+    } catch (e) {
+        console.log("Interactions API skipped, trying standard endpoints...");
+    }
+
+    // محاولة النماذج المستقرة البديلة
+    const fallbackEndpoints = [
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent"
+    ];
+
+    let lastError = "تعذر الحصول على استجابة من النموذج.";
+
+    for (const ep of fallbackEndpoints) {
+        try {
+            const res = await fetch(`${ep}?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (res.ok) {
+                const resData = await res.json();
+                if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
+                    return resData.candidates[0].content.parts[0].text;
+                }
+            } else {
+                const err = await res.json().catch(() => ({}));
+                lastError = err.error?.message || res.statusText;
+            }
+        } catch (err) {
+            lastError = err.message;
         }
     }
 
-    // النماذج الاحتياطية الأكثر استقراراً في حال تعذر القائمة
-    const targetModel = activeModelName || "models/gemini-2.5-flash";
-    const cleanModelName = targetModel.startsWith("models/") ? targetModel : `models/${targetModel}`;
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/${cleanModelName}:generateContent?key=${GEMINI_API_KEY}`;
-
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-        })
-    });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const errMsg = errData.error?.message || "حدث خطأ أثناء معالجة الطلب، تأكد من صلاحية المفتاح.";
-        throw new Error(errMsg);
-    }
-
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    throw new Error(lastError);
 }
 
 // البحث الذكي من الزر العلوي
