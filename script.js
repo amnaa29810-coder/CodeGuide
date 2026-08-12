@@ -1,15 +1,11 @@
-// فك تشفير المفتاح برمجياً لتجاوز فحص GitHub الأمني
-const _k = ["QVEuQWI4Uk42TGVX", "SjIwQkRSbmRyNTFl", "SGFOWW5zRlRTemV1", "TTJXakZqTE5LNVh3", "cnBZQWc="].join("");
-const GEMINI_API_KEY = atob(_k);
+// مفتاح Gemini API الافتراضي (يبدأ بـ AIzaSy)
+const DEFAULT_KEY = "AIzaSy" + "YourActualKeyHere";
 
 // عناصر الواجهة
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
-const aiResponse = document.getElementById("ai-response");
-
 const projectIdea = document.getElementById("project-idea");
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
-const projectResponse = document.getElementById("project-response");
 
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
@@ -20,57 +16,76 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// نافذة العرض المنبثقة
-function openModal(title, contentHtml) {
+// دالة فتح النافذة المنبثقة للنتائج
+function showModal(title, htmlContent) {
     modalTitle.innerText = title;
-    modalBody.innerHTML = contentHtml;
+    modalBody.innerHTML = htmlContent;
     modal.classList.remove("hidden");
 }
 
+// إغلاق النافذة
 closeModal.onclick = () => modal.classList.add("hidden");
-window.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
+window.onclick = (e) => {
+    if (e.target === modal) modal.classList.add("hidden");
+};
 
-// زر عرض اللغات
+// 1. زر موسوعة اللغات
 btnLanguages.onclick = () => {
-    let html = "<ul class='info-list'>";
+    let content = "";
     programmingLanguages.forEach(item => {
-        html += `<li><strong>${item.name}:</strong> ${item.desc}</li>`;
-    });
-    html += "</ul>";
-    openModal("📚 موسوعة لغات البرمجة", html);
-};
-
-// زر عرض الأدوات
-btnTools.onclick = () => {
-    let html = "<ul class='info-list'>";
-    devTools.forEach(item => {
-        html += `<li><strong>${item.name}:</strong> ${item.desc}</li>`;
-    });
-    html += "</ul>";
-    openModal("🛠️ الأدوات البرمجية", html);
-};
-
-// زر عرض تطبيقات ومحررات التشغيل
-btnIdeApps.onclick = () => {
-    let html = "<div class='apps-container'>";
-    executionApps.forEach(app => {
-        html += `
-            <div class='app-card'>
-                <h3>${app.name}</h3>
-                <span class='badge'>${app.category}</span>
-                <p>${app.desc}</p>
-                <p class='uses-text'><strong>الاستخدامات:</strong> ${app.uses}</p>
+        content += `
+            <div class="info-card">
+                <h4>${item.name}</h4>
+                <p>${item.desc}</p>
             </div>
         `;
     });
-    html += "</div>";
-    openModal("📱 تطبيقات ومحررات تنفيذ الأكواد", html);
+    showModal("📚 موسوعة لغات البرمجة", content);
 };
 
-// دالة إرسال الطلبات لـ Gemini API
+// 2. زر الأدوات البرمجية
+btnTools.onclick = () => {
+    let content = "";
+    devTools.forEach(item => {
+        content += `
+            <div class="info-card">
+                <h4>${item.name}</h4>
+                <p>${item.desc}</p>
+            </div>
+        `;
+    });
+    showModal("🛠️ الأدوات البرمجية", content);
+};
+
+// 3. زر تطبيقات وبيئات التشغيل (IDEs)
+btnIdeApps.onclick = () => {
+    let content = "";
+    executionApps.forEach(app => {
+        content += `
+            <div class="info-card">
+                <h4>${app.name}</h4>
+                <span class="tag-badge">${app.category}</span>
+                <p style="margin-top:6px;">${app.desc}</p>
+                <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
+            </div>
+        `;
+    });
+    showModal("📱 تطبيقات ومحررات تنفيذ الأكواد", content);
+};
+
+// دالة تحويل علامات الماركداون لتنسيق نص جميل
+function formatMarkdown(text) {
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+}
+
+// دالة الاتصال بـ Gemini API
 async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
+    const apiKey = localStorage.getItem("custom_gemini_key") || DEFAULT_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
     const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,53 +95,45 @@ async function callGemini(promptText) {
     });
 
     if (!response.ok) {
-        throw new Error("حدث خطأ أثناء الاتصال بالخادم. تأكد من صحة المفتاح واتصالك بالإنترنت.");
+        throw new Error("حدث خطأ في الاتصال بالذكاء الاصطناعي. تأكد من صحة المفتاح واتصالك بالإنترنت.");
     }
 
     const data = await response.json();
     return data.candidates[0].content.parts[0].text;
 }
 
-// دالة تحويل علامات الماركداون لتنسيق نص منسق
-function formatText(text) {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-               .replace(/\n/g, '<br>');
-}
-
-// البحث الذكي السريع
+// البحث الذكي من الزر العلوي
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    aiResponse.classList.remove("hidden");
-    aiResponse.innerHTML = "⏳ جاري البحث والتفكير بالذكاء الاصطناعي...";
+    showModal("🔍 إجابة المستشار الذكي", "<p style='text-align:center; padding:20px;'>⏳ جاري البحث والتفكير بالذكاء الاصطناعي...</p>");
 
     try {
         const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
         const result = await callGemini(prompt);
-        aiResponse.innerHTML = formatText(result);
+        modalBody.innerHTML = formatMarkdown(result);
     } catch (err) {
-        aiResponse.innerHTML = `<span style="color:red;">❌ ${err.message}</span>`;
+        modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
 };
 
-// تحليل المشروع واقتراح التقنيات
+// تحليل فكرة المشروع
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
-    projectResponse.classList.remove("hidden");
-    projectResponse.innerHTML = "⏳ جاري تحليل الفكرة واقتراح أفضل اللغات والتقنيات...";
+    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح أفضل اللغات والتقنيات المناسبة...</p>");
 
     try {
-        const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح:
+        const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح التالي بتنسيق واضح ونقاط:
 1. أفضل لغات البرمجة وأطر العمل المناسبة (Frontend, Backend, Database).
 2. الأدوات وتطبيقات التنفيذ الموصى بها لبدء العمل.
-3. خطوات التنفيذ الأساسية بشكل مرتب.`;
+3. خطوات التنفيذ الأساسية.`;
         
         const result = await callGemini(prompt);
-        projectResponse.innerHTML = formatText(result);
+        modalBody.innerHTML = formatMarkdown(result);
     } catch (err) {
-        projectResponse.innerHTML = `<span style="color:red;">❌ ${err.message}</span>`;
+        modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
 };
