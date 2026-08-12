@@ -86,13 +86,12 @@ function formatMarkdown(text) {
 
 // دالة الاتصال بـ Gemini API
 async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": GEMINI_API_KEY
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
             contents: [{ parts: [{ text: promptText }] }]
@@ -109,7 +108,7 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// البحث الذكي من الزر العلوي (يفتح في واجهة منفصلة)
+// البحث الذكي من الزر العلوي
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
@@ -125,7 +124,7 @@ searchBtn.onclick = async () => {
     }
 };
 
-// تحليل فكرة المشروع (يفتح في واجهة منفصلة)
+// تحليل فكرة المشروع
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
