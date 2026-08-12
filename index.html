@@ -1,106 +1,54 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مستشار البرمجة الذكي</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستشار البرمجة الذكي</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>مستشار البرمجة الذكي 🚀</h1>
+        </header>
 
-  <!-- الشاشة الرئيسية -->
-  <main id="mainScreen" class="screen active">
-    <header class="app-header">
-      <h1>مستشار البرمجة الذكي 🚀</h1>
-    </header>
+        <!-- قسم البحث والذكاء الاصطناعي -->
+        <div class="search-box card">
+            <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="مثال: كيف أبدأ تعلم بايثون؟">
+                <button id="search-btn">بحث</button>
+            </div>
+            <div id="ai-response" class="result-box hidden"></div>
+        </div>
 
-    <!-- البحث العلوي السريع -->
-    <section class="card quick-search-box">
-      <label>ابحث عن أي معلومة أو لغة:</label>
-      <div class="search-input-group">
-        <input type="text" id="quickQuery" placeholder="مثلاً: ما هو الفرق بين SQL و NoSQL؟">
-        <button id="btnQuickSearch">بحث</button>
-      </div>
-      <div id="quickLoader" class="loader-container hidden">
-        <div class="spinner"></div>
-        <span>جاري جلب الإجابة...</span>
-      </div>
-      <div id="quickResult" class="quick-result-box hidden"></div>
-    </section>
+        <!-- الأزرار الرئيسية -->
+        <div class="actions">
+            <button id="btn-languages" class="action-btn">📚 موسوعة اللغات</button>
+            <button id="btn-tools" class="action-btn">🛠️ الأدوات البرمجية</button>
+            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 تطبيقات تنفيذ الأكواد</button>
+        </div>
 
-    <!-- أزرار التصفح السريعة -->
-    <section class="nav-buttons-grid">
-      <button class="nav-btn" onclick="openScreen('languagesScreen')">📚 موسوعة اللغات</button>
-      <button class="nav-btn" onclick="openScreen('toolsScreen')">🛠️ الأدوات البرمجية</button>
-      <button class="nav-btn" onclick="openScreen('settingsScreen')">⚙️ ضبط المفتاح (API)</button>
-    </section>
+        <!-- قسم تحليل فكرة المشروع -->
+        <div class="project-planner card">
+            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
+            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك هنا (مثلاً: تطبيق توصيل طلبات، موقع متجر إلكتروني...)"></textarea>
+            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
+            <div id="project-response" class="result-box hidden"></div>
+        </div>
 
-    <!-- تحليل فكرة المشروع -->
-    <section class="card project-idea-box">
-      <h3>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h3>
-      <textarea id="projectIdeaInput" rows="4" placeholder="اكتب فكرة مشروعك بالتفصيل هنا... مثلاً: تطبيق توصيل طلبات مع تتبع السائق في الخريطة ودفع إلكتروني"></textarea>
-      <button id="btnAnalyzeIdea" class="primary-btn">حلل المشروع واقترح التقنيات</button>
-      <div id="ideaLoader" class="loader-container hidden">
-        <div class="spinner"></div>
-        <span>جاري تحليل الفكرة واختيار أفضل لغة وأدوات...</span>
-      </div>
-    </section>
-  </main>
-
-  <!-- شاشة نتيجة الفكرة -->
-  <div id="resultScreen" class="screen">
-    <header class="screen-header">
-      <button class="back-btn" onclick="openScreen('mainScreen')">⬅ رجوع</button>
-      <h2>الخطة المقترحة لمشروعك</h2>
-    </header>
-    <div class="content-body">
-      <div id="ideaResultContent" class="result-display-card"></div>
-      <div class="action-buttons">
-        <button id="btnCopyResult" class="action-btn">📋 نسخ النتيجة</button>
-        <button id="btnShareResult" class="action-btn">🔗 مشاركة</button>
-      </div>
+        <!-- نافذة عرض اللغات والأدوات والتطبيقات المنبثقة -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- شاشة موسوعة اللغات -->
-  <div id="languagesScreen" class="screen">
-    <header class="screen-header">
-      <button class="back-btn" onclick="openScreen('mainScreen')">⬅ رجوع</button>
-      <h2>موسوعة لغات البرمجة</h2>
-    </header>
-    <div class="content-body">
-      <input type="text" id="langSearchInput" class="filter-input" placeholder="🔍 ابحث عن لغة...">
-      <div id="languagesList" class="cards-list"></div>
-    </div>
-  </div>
-
-  <!-- شاشة موسوعة الأدوات -->
-  <div id="toolsScreen" class="screen">
-    <header class="screen-header">
-      <button class="back-btn" onclick="openScreen('mainScreen')">⬅ رجوع</button>
-      <h2>الأدوات وبيئات التطوير</h2>
-    </header>
-    <div class="content-body">
-      <input type="text" id="toolsSearchInput" class="filter-input" placeholder="🔍 ابحث عن أداة...">
-      <div id="toolsList" class="cards-list"></div>
-    </div>
-  </div>
-
-  <!-- شاشة الإعدادات -->
-  <div id="settingsScreen" class="screen">
-    <header class="screen-header">
-      <button class="back-btn" onclick="openScreen('mainScreen')">⬅ رجوع</button>
-      <h2>إعدادات الربط</h2>
-    </header>
-    <div class="content-body card">
-      <label>مفتاح Google Gemini API Key الخاص بك:</label>
-      <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
-      <button id="btnSaveKey" class="primary-btn">حفظ المفتاح</button>
-      <p class="hint">يتم حفظ المفتاح محلياً على هاتفك فقط لتشغيل الذكاء الاصطناعي.</p>
-    </div>
-  </div>
-
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
