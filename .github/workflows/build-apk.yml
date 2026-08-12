@@ -26,13 +26,15 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Capacitor & Generate Android App
+      - name: Prepare Web Directory & Build
         run: |
+          mkdir -p www
+          cp index.html style.css script.js data.js www/
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "AICodeAdvisor" "com.example.aicodeadvisor" --web-dir .
+          npx cap init "CodeGuide" "com.example.codeguide" --web-dir www
           npx cap add android
-          npx cap copy android
+          npx cap sync android
 
       - name: Build Debug APK
         run: |
@@ -43,5 +45,5 @@ jobs:
       - name: Upload APK File
         uses: actions/upload-artifact@v4
         with:
-          name: AI-Code-Advisor-APK
+          name: CodeGuide-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
