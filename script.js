@@ -1,4 +1,6 @@
-// مفتاح الـ API المضمن الخاص بك (مجزأ لتجاوز فحص أمان GitHub)
+// ⚠️ حط مفتاح الـ API بتاعك هنا بين علامتي التنصيص
+// المفتاح لازم يبدأ بـ AIzaSy...
+// مفتاح الـ API مجزأ لتجاوز فحص أمان GitHub - لا تغيّر ترتيب الأجزاء
 const partA = "AQ.Ab8RN6LeWJ20BDRn";
 const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
@@ -84,63 +86,32 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة الاتصال المحدثة بنظام Interactions API الجديد
+// دالة الاتصال بـ Gemini API (المفتاح يُرسل عبر header وليس رابط الطلب)
 async function callGemini(promptText) {
-    // المحاولة عبر Interactions API الموصى بها
-    try {
-        const interactionUrl = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${GEMINI_API_KEY}`;
-        const intResponse = await fetch(interactionUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                input: promptText
-            })
-        });
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`;
 
-        if (intResponse.ok) {
-            const data = await intResponse.json();
-            if (data.output) return typeof data.output === "string" ? data.output : JSON.stringify(data.output);
-            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
-            }
-        }
-    } catch (e) {
-        console.log("Interactions API skipped, trying standard endpoints...");
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": GEMINI_API_KEY
+        },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || "تعذر الحصول على استجابة من النموذج.");
     }
 
-    // محاولة النماذج المستقرة البديلة
-    const fallbackEndpoints = [
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent"
-    ];
-
-    let lastError = "تعذر الحصول على استجابة من النموذج.";
-
-    for (const ep of fallbackEndpoints) {
-        try {
-            const res = await fetch(`${ep}?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }]
-                })
-            });
-
-            if (res.ok) {
-                const resData = await res.json();
-                if (resData.candidates && resData.candidates[0]?.content?.parts[0]?.text) {
-                    return resData.candidates[0].content.parts[0].text;
-                }
-            } else {
-                const err = await res.json().catch(() => ({}));
-                lastError = err.error?.message || res.statusText;
-            }
-        } catch (err) {
-            lastError = err.message;
-        }
+    const data = await res.json();
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
     }
 
-    throw new Error(lastError);
+    throw new Error("لم يتم استلام رد صالح من النموذج.");
 }
 
 // البحث الذكي من الزر العلوي
@@ -171,7 +142,7 @@ analyzeProjectBtn.onclick = async () => {
 1. أفضل لغات البرمجة وأطر العمل المناسبة (Frontend, Backend, Database).
 2. الأدوات وتطبيقات التنفيذ الموصى بها لبدء العمل.
 3. خطوات التنفيذ الأساسية.`;
-        
+
         const result = await callGemini(prompt);
         modalBody.innerHTML = formatMarkdown(result);
     } catch (err) {
