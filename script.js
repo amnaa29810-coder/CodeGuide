@@ -84,28 +84,41 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة الاتصال بـ Gemini API (الحل الجذري باستخدام v1 واستقرار النموذج)
+// دالة الاتصال بـ Gemini API مع معالجة النماذج المتوافقة تلقائياً
 async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const endpoints = [
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`
+    ];
 
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-        })
-    });
+    let lastError = null;
 
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const errMsg = errData.error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.";
-        throw new Error(errMsg);
+    for (const url of endpoints) {
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                    return data.candidates[0].content.parts[0].text;
+                }
+            } else {
+                const errJson = await response.json().catch(() => ({}));
+                lastError = errJson.error?.message || response.statusText;
+            }
+        } catch (e) {
+            lastError = e.message;
+        }
     }
 
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    throw new Error(lastError || "تعذر الاتصال بالخادم، يرجى التحقق من المفتاح والاتصال.");
 }
 
 // البحث الذكي من الزر العلوي
