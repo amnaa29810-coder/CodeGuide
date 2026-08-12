@@ -20,30 +20,24 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Prepare Web Directory & Build
+      - name: Install Cordova and Build APK
         run: |
-          mkdir -p www
-          cp index.html style.css script.js data.js www/
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "CodeGuide" "com.example.codeguide" --web-dir www
-          npx cap add android
-          npx cap sync android
-
-      - name: Build Debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          npm install -g cordova
+          cordova create myApp com.example.codeguide CodeGuide
+          cd myApp
+          rm -rf www/*
+          cp ../index.html ../style.css ../script.js ../data.js www/
+          cordova platform add android
+          cordova build android --debug
 
       - name: Upload APK File
         uses: actions/upload-artifact@v4
         with:
           name: CodeGuide-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: myApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
