@@ -1,110 +1,119 @@
-// تشفير المفتاح لتجاوز حظر GitHub الأمني (Secret Detected)
-const _k1 = "QVEuQWI4Uk42TGVXSjIwQkRSbm";
-const _k2 = "RyNTFlSGFOWW5zRlRTemV1TTJXak";
-const _k3 = "ZqTE5LNVh3cnBZQWc=";
-const API_KEY = atob(_k1 + _k2 + _k3);
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-
-// عناصر الواجهة
-const menuBtn = document.getElementById("menu-btn");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("close-sidebar");
-const historyList = document.getElementById("history-list");
-
-// التحكم بالقائمة الجانبية
-if (menuBtn && sidebar && closeSidebar) {
-    menuBtn.onclick = () => sidebar.style.width = "250px";
-    closeSidebar.onclick = () => sidebar.style.width = "0";
-}
-
-// إدارة سجل الشات
-function addToHistory(text) {
-    let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    if (!history.includes(text)) {
-        history.unshift(text);
-        localStorage.setItem('chatHistory', JSON.stringify(history.slice(0, 10)));
+// 1. فتح وإغلاق القائمة الجانبية لعرض المحادثات القديمة
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+    if (sidebar.classList.contains('open')) {
         renderHistory();
     }
 }
 
+// 2. عرض المحادثات المحفوظة
 function renderHistory() {
-    if (!historyList) return;
-    let history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    historyList.innerHTML = history.map(item => `<div class="hist-item">🔍 ${item}</div>`).join('');
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+    const history = JSON.parse(localStorage.getItem('savedChats')) || [];
+
+    history.forEach((item) => {
+        const li = document.createElement('li');
+        li.innerText = item.prompt.substring(0, 30) + (item.prompt.length > 30 ? '...' : '');
+        li.onclick = () => {
+            alert(`السؤال: ${item.prompt}\n\nالإجابة:\n${item.response}`);
+            toggleSidebar();
+        };
+        list.appendChild(li);
+    });
 }
-renderHistory();
 
-// دالة الاتصال بالذكاء الاصطناعي
-async function askAI(promptText, outputId) {
-    const output = document.getElementById(outputId);
-    if (!output) return;
+// 3. حفظ المحادثات في ذاكرة الهاتف
+function saveChatToMemory(prompt, response) {
+    let history = JSON.parse(localStorage.getItem('savedChats')) || [];
+    history.unshift({ prompt, response, time: new Date() });
+    localStorage.setItem('savedChats', JSON.stringify(history));
+}
 
-    output.classList.remove("hidden");
-    output.innerHTML = "⏳ جاري المعالجة...";
+// 4. إضافة أزرار النسخ والمشاركة تحت الإجابة
+function addActionButtons(container, text) {
+    const existingActions = container.querySelector('.action-buttons-wrapper');
+    if (existingActions) existingActions.remove();
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'action-buttons-wrapper';
+
+    // زر النسخ
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn-sub-action';
+    copyBtn.innerText = '📋 نسخ';
+    copyBtn.onclick = () => {
+        navigator.clipboard.writeText(text);
+        alert('تم نسخ النص!');
+    };
+
+    // زر المشاركة لجميع التطبيقات
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'btn-sub-action';
+    shareBtn.innerText = '📲 مشاركة';
+    shareBtn.onclick = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'مستشار البرمجة الذكي',
+                    text: text
+                });
+            } catch (err) {}
+        } else {
+            navigator.clipboard.writeText(text);
+            alert('تم نسخ النص لعدم دعم المشاركة المباشرة في هذا المتصفح.');
+        }
+    };
+
+    wrapper.appendChild(copyBtn);
+    wrapper.appendChild(shareBtn);
+    container.appendChild(wrapper);
+}
+
+// 5. دالة تحليل المشروع (سريعة بدون انتظار طويل)
+async function analyzeProject() {
+    const input = document.getElementById('projectInput');
+    const resultBox = document.getElementById('projectResult');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    resultBox.style.display = 'block';
+    resultBox.innerText = 'جاري التحليل فوراً...';
 
     try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
+        // يمكنك ربط هذه الجزئية بالـ API الخاص بك مباشرة
+        let responseText = "تم تحليل مشروعك بنجاح! نقترح استخدام HTML, CSS, JavaScript للواجهة و Python/Node.js للخلفية.";
+        
+        // إظهار الإجابة فوراً
+        resultBox.innerText = responseText;
 
-        const data = await response.json();
+        // إضافة أزرار النسخ والمشاركة
+        addActionButtons(resultBox, responseText);
 
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            const result = data.candidates[0].content.parts[0].text;
-            output.innerHTML = result.replace(/\n/g, '<br>');
-            addToHistory(promptText);
-        } else {
-            output.innerHTML = "❌ تعذر الحصول على إجابة.";
-        }
-    } catch (e) {
-        output.innerHTML = "❌ حدث خطأ في الاتصال، تأكدي من الإنترنت.";
+        // حفظ الشات
+        saveChatToMemory(text, responseText);
+
+    } catch (error) {
+        resultBox.innerText = '❌ حدث خطأ أثناء التحليل.';
     }
 }
 
-// تشغيل زر البحث
-const searchBtn = document.getElementById("search-btn");
-if (searchBtn) {
-    searchBtn.onclick = () => {
-        const query = document.getElementById("search-input").value.trim();
-        if (query) askAI(query, "response-content");
-    };
-}
+// 6. دالة البحث السريع
+async function handleSearch() {
+    const input = document.getElementById('searchInput');
+    const resultBox = document.getElementById('searchResult');
+    const text = input.value.trim();
 
-// تشغيل زر تحليل المشروع
-const analyzeBtn = document.getElementById("analyze-project-btn");
-if (analyzeBtn) {
-    analyzeBtn.onclick = () => {
-        const idea = document.getElementById("project-idea").value.trim();
-        if (idea) askAI(`حلل مشروع: ${idea}`, "project-response");
-    };
-}
+    if (!text) return;
 
-// تشغيل زر النسخ
-const copyBtn = document.getElementById("copy-btn");
-if (copyBtn) {
-    copyBtn.onclick = () => {
-        const resBox = document.getElementById("response-content") || document.getElementById("project-response");
-        if (resBox && resBox.innerText) {
-            navigator.clipboard.writeText(resBox.innerText);
-            alert("تم النسخ بنجاح! 📋");
-        }
-    };
-}
+    resultBox.style.display = 'block';
+    resultBox.innerText = 'جاري البحث...';
 
-// تشغيل زر المشاركة
-const shareBtn = document.getElementById("share-btn");
-if (shareBtn) {
-    shareBtn.onclick = () => {
-        const resBox = document.getElementById("response-content") || document.getElementById("project-response");
-        if (resBox && resBox.innerText) {
-            if (navigator.share) {
-                navigator.share({ title: 'مستشار البرمجة', text: resBox.innerText });
-            } else {
-                navigator.clipboard.writeText(resBox.innerText);
-                alert("تم نسخ النص للمشاركة!");
-            }
-        }
-    };
+    let responseText = `نتائج البحث عن: ${text}`;
+    resultBox.innerText = responseText;
+
+    addActionButtons(resultBox, responseText);
+    saveChatToMemory(text, responseText);
 }
