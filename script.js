@@ -84,41 +84,92 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة الاتصال المحدثة مع إعادة المحاولة التلقائية عند وجود ضغط على الخادم
-async function callGemini(promptText, retries = 2) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${GEMINI_API_KEY}`;
+// إدارة حفظ السجل في LocalStorage
+function saveChatToHistory(question, answer) {
+    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    history.push({ question, answer, date: new Date().toLocaleString("ar-EG") });
+    localStorage.setItem("chatHistory", JSON.stringify(history));
+}
 
-    for (let i = 0; i <= retries; i++) {
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ input: promptText })
-            });
+// دالة الاتصال بـ Gemini المعالجة للخطأ والسرعة
+async function callGemini(promptText) {
+    const primaryUrl = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${GEMINI_API_KEY}`;
+    
+    try {
+        const response = await fetch(primaryUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "models/gemini-2.5-flash",
+                input: promptText
+            })
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.output) return typeof data.output === "string" ? data.output : JSON.stringify(data.output);
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    return data.candidates[0].content.parts[0].text;
-                }
+        if (response.ok) {
+            const data = await response.json();
+            if (data.output) return typeof data.output === "string" ? data.output : JSON.stringify(data.output);
+            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
             }
-
-            // إذا كان الخادم عليه ضغط وكان هناك محاولات متبقية، ننتظر ثانيتين ونعيد الطلب
-            if (response.status === 503 || response.status === 429) {
-                if (i < retries) {
-                    await new Promise(res => setTimeout(res, 2000));
-                    continue;
-                }
-            }
-
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error?.message || "الخادم مشغول حالياً، يرجى المحاولة بعد قليل.");
-        } catch (err) {
-            if (i === retries) throw err;
-            await new Promise(res => setTimeout(res, 2000));
         }
+    } catch (e) {
+        console.log("Fallback to generateContent...");
     }
+
+    // نقطة نهاية احتياطية لضمان الاستجابة السريعة وعدم التأخير
+    const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const fallbackRes = await fetch(fallbackUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+        })
+    });
+
+    if (!fallbackRes.ok) {
+        const errData = await fallbackRes.json().catch(() => ({}));
+        throw new Error(errData.error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
+    }
+
+    const fbData = await fallbackRes.json();
+    return fbData.candidates[0].content.parts[0].text;
+}
+
+// دالة إرفاق أزرار النسخ والمشاركة والإجابة في النافذة
+function renderResponseWithTools(rawText) {
+    const formattedHtml = formatMarkdown(rawText);
+    const container = document.createElement("div");
+    
+    container.innerHTML = `
+        <div id="response-text-content">${formattedHtml}</div>
+        <div style="display:flex; gap:10px; margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
+            <button id="copy-response-btn" style="flex:1; padding:8px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer;">📋 نسخ الإجابة</button>
+            <button id="share-response-btn" style="flex:1; padding:8px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer;">🔗 مشاركة</button>
+        </div>
+    `;
+
+    modalBody.innerHTML = "";
+    modalBody.appendChild(container);
+
+    // زر النسخ
+    document.getElementById("copy-response-btn").onclick = () => {
+        navigator.clipboard.writeText(rawText).then(() => {
+            alert("تم نسخ النص بنجاح!");
+        });
+    };
+
+    // زر المشاركة
+    document.getElementById("share-response-btn").onclick = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: 'إجابة مستشار البرمجة',
+                text: rawText
+            }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(rawText);
+            alert("تم نسخ النص لمشاركته!");
+        }
+    };
 }
 
 // البحث الذكي من الزر العلوي
@@ -126,12 +177,16 @@ searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري البحث والتفكير بالذكاء الاصطناعي...</p>");
+    // اختفاء النص من المربع فور الضغط
+    searchInput.value = "";
+
+    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري الحصول على الإجابة فوراً...</p>");
 
     try {
         const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
         const result = await callGemini(prompt);
-        modalBody.innerHTML = formatMarkdown(result);
+        saveChatToHistory(query, result);
+        renderResponseWithTools(result);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
@@ -142,7 +197,10 @@ analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
-    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح أفضل اللغات والتقنيات المناسبة...</p>");
+    // اختفاء النص من المربع فور الضغط
+    projectIdea.value = "";
+
+    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح الخطة فوراً...</p>");
 
     try {
         const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح التالي بتنسيق واضح ونقاط:
@@ -151,7 +209,8 @@ analyzeProjectBtn.onclick = async () => {
 3. خطوات التنفيذ الأساسية.`;
         
         const result = await callGemini(prompt);
-        modalBody.innerHTML = formatMarkdown(result);
+        saveChatToHistory(idea, result);
+        renderResponseWithTools(result);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
