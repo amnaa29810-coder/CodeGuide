@@ -310,3 +310,13 @@ textarea {
 .hidden {
     display: none !important;
 }
+.sidebar {
+    height: 100%; width: 0; position: fixed; z-index: 1000; top: 0; right: 0;
+    background-color: #1e293b; overflow-x: hidden; transition: 0.3s; padding-top: 60px; color: white;
+}
+.sidebar.active { width: 250px; }
+.sidebar h3 { text-align: center; color: white; }
+.hist-item { padding: 15px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 14px; }
+#menu-btn { background: none; border: none; font-size: 24px; color: #2563eb; cursor: pointer; }
+.share-btn { margin-top: 10px; background: #2563eb; color: white; border: none; padding: 8px; border-radius: 5px; width: 100%; cursor: pointer; }
+
