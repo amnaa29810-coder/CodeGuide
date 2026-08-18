@@ -3,37 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>مستشار البرمجة الذكي</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- زر الثلاث خطوط للقائمة الجانبية -->
-    <header class="header">
-        <button id="menuBtn" class="menu-btn" onclick="toggleSidebar()">☰</button>
-    </header>
-
-    <!-- القائمة الجانبية لعرض المحادثات المحفوظة -->
+    <!-- القائمة الجانبية -->
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h3>المحادثات السابقة</h3>
-            <button onclick="toggleSidebar()" class="close-btn">✕</button>
+            <h3>السجل 🕒</h3>
+            <span id="close-sidebar">&times;</span>
         </div>
-        <ul id="historyList" class="history-list"></ul>
+        <div id="history-list"></div>
     </div>
 
-    <!-- حاوية الشات والرسائل -->
-    <main class="chat-container">
-        <div id="chatBox" class="chat-box"></div>
+    <div class="container">
+        <header class="top-header">
+            <button id="menu-btn" class="menu-icon">☰</button>
+            <h1>مستشار البرمجة الذكي 🚀</h1>
+        </header>
 
-        <!-- مربع السؤال فارغ بدون placeholder -->
-        <div class="input-container">
-            <textarea id="userInput" rows="1"></textarea>
-            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+        <div class="search-box card">
+            <label>ابحث عن أي معلومة أو لغة:</label>
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="">
+                <button id="search-btn">بحث</button>
+            </div>
+            <div id="ai-response" class="result-box hidden">
+                <div id="response-content"></div>
+                <div class="action-buttons">
+                    <button id="copy-btn">نسخ 📋</button>
+                    <button id="share-btn">مشاركة 📤</button>
+                </div>
+            </div>
         </div>
-    </main>
 
-    <script src="data.js"></script>
+        <div class="project-planner card">
+            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
+            <textarea id="project-idea" rows="3" placeholder=""></textarea>
+            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
+            <div id="project-response" class="result-box hidden"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
