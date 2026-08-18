@@ -91,34 +91,11 @@ function saveChatToHistory(question, answer) {
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// دالة الاتصال بـ Gemini المعالجة للخطأ والسرعة
+// دالة الاتصال المباشرة والسريعة باستخدام النموذج الجديد المطلوب
 async function callGemini(promptText) {
-    const primaryUrl = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
-    try {
-        const response = await fetch(primaryUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "models/gemini-2.5-flash",
-                input: promptText
-            })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.output) return typeof data.output === "string" ? data.output : JSON.stringify(data.output);
-            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
-            }
-        }
-    } catch (e) {
-        console.log("Fallback to generateContent...");
-    }
-
-    // نقطة نهاية احتياطية لضمان الاستجابة السريعة وعدم التأخير
-    const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    const fallbackRes = await fetch(fallbackUrl, {
+    const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -126,13 +103,13 @@ async function callGemini(promptText) {
         })
     });
 
-    if (!fallbackRes.ok) {
-        const errData = await fallbackRes.json().catch(() => ({}));
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
     }
 
-    const fbData = await fallbackRes.json();
-    return fbData.candidates[0].content.parts[0].text;
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
 }
 
 // دالة إرفاق أزرار النسخ والمشاركة والإجابة في النافذة
@@ -177,10 +154,9 @@ searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    // اختفاء النص من المربع فور الضغط
-    searchInput.value = "";
+    searchInput.value = ""; // اختفاء النص طوالي
 
-    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري الحصول على الإجابة فوراً...</p>");
+    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري الحصول على الإجابة...</p>");
 
     try {
         const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
@@ -197,10 +173,9 @@ analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
-    // اختفاء النص من المربع فور الضغط
-    projectIdea.value = "";
+    projectIdea.value = ""; // اختفاء النص طوالي
 
-    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح الخطة فوراً...</p>");
+    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح الخطة...</p>");
 
     try {
         const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح التالي بتنسيق واضح ونقاط:
