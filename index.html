@@ -5,66 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مستشار البرمجة الذكي</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- ترويسة التطبيق -->
-        <header class="app-header">
-            <div class="logo-area">
-                <span class="logo-icon">🚀</span>
-                <h1>مستشار البرمجة الذكي</h1>
-            </div>
-            <p class="subtitle">دليلك ومساعدك الذكي في عالم ولغات البرمجة</p>
+    <!-- القائمة الجانبية -->
+    <div id="sidebar" class="sidebar">
+        <button id="close-sidebar">&times;</button>
+        <h3>سجل البحث السابق</h3>
+        <div id="history-list"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <button id="menu-btn">☰</button>
+            <h1>مستشار البرمجة الذكي 🚀</h1>
         </header>
 
-        <!-- شريط البحث السريع العلوي -->
-        <section class="card search-section">
-            <label for="search-input" class="section-label">🔍 اسأل المستشار الذكي عن أي لغة أو مفهوم:</label>
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="مثلاً: ما الفرق بين بايثون وجافا؟">
-                <button id="search-btn" class="btn-primary">بحث</button>
+        <div class="search-box card">
+            <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="اكتب سؤالك هنا...">
+                <button id="search-btn">بحث</button>
             </div>
-        </section>
+            <div id="ai-response" class="result-box hidden">
+                <div id="response-content"></div>
+                <button id="share-btn" class="share-btn">📤 مشاركة الإجابة</button>
+            </div>
+        </div>
 
-        <!-- الأزرار الرئيسية الثلاثة -->
-        <section class="action-grid">
-            <button id="btn-languages" class="nav-card">
-                <span class="icon">📚</span>
-                <span class="title">موسوعة اللغات</span>
-            </button>
-            <button id="btn-tools" class="nav-card">
-                <span class="icon">🛠️</span>
-                <span class="title">الأدوات البرمجية</span>
-            </button>
-            <button id="btn-ide-apps" class="nav-card highlight">
-                <span class="icon">📱</span>
-                <span class="title">تطبيقات التنفيذ (IDEs)</span>
-            </button>
-        </section>
+        <div class="actions">
+            <button id="btn-languages" class="action-btn">📚 اللغات</button>
+            <button id="btn-tools" class="action-btn">🛠️ الأدوات</button>
+            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 التطبيقات</button>
+        </div>
 
-        <!-- قسم تحليل فكرة المشروع -->
-        <section class="card project-section">
-            <h2 class="section-title">💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
-            <p class="section-desc">اكتب فكرة تطبيقك أو موقعك وسيقترح عليك الذكاء الاصطناعي خطة العمل واللغات المناسبة:</p>
-            <textarea id="project-idea" rows="3" placeholder="اكتب فكرتك هنا (مثلاً: تطبيق حجز مواعيد عيادات، متجر إلكتروني...)"></textarea>
-            <button id="analyze-project-btn" class="btn-primary btn-full">حلل المشروع واقترح التقنيات</button>
-        </section>
+        <div class="project-planner card">
+            <h2>💡 حلل فكرة مشروعك</h2>
+            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك..."></textarea>
+            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
+            <div id="project-response" class="result-box hidden"></div>
+        </div>
 
-        <!-- واجهة النتائج المنبثقة المنفصلة (Popup Modal) -->
-        <div id="modal" class="modal-overlay hidden">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3 id="modal-title">النتيجة</h3>
-                    <button id="close-modal" class="modal-close">&times;</button>
-                </div>
-                <div id="modal-body" class="modal-body">
-                    <!-- المحتوى والنتائج تظهر هنا -->
-                </div>
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
             </div>
         </div>
     </div>
-
     <script src="data.js"></script>
     <script src="script.js"></script>
 </body>
