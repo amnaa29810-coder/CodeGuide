@@ -8,44 +8,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- القائمة الجانبية -->
+    <!-- القائمة الجانبية لسجل البحث -->
     <div id="sidebar" class="sidebar">
-        <button id="close-sidebar">&times;</button>
-        <h3>سجل البحث السابق</h3>
+        <div class="sidebar-header">
+            <h3>سجل البحث 🕒</h3>
+            <span id="close-sidebar" class="close-btn">&times;</span>
+        </div>
         <div id="history-list"></div>
     </div>
 
     <div class="container">
-        <header>
-            <button id="menu-btn">☰</button>
+        <header class="top-header">
+            <button id="menu-btn" class="menu-icon-btn">☰</button>
             <h1>مستشار البرمجة الذكي 🚀</h1>
         </header>
 
+        <!-- قسم البحث والذكاء الاصطناعي -->
         <div class="search-box card">
             <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
             <div class="input-group">
-                <input type="text" id="search-input" placeholder="اكتب سؤالك هنا...">
+                <input type="text" id="search-input" placeholder="ما هو الفرق بين بايثون وجافا">
                 <button id="search-btn">بحث</button>
             </div>
             <div id="ai-response" class="result-box hidden">
                 <div id="response-content"></div>
-                <button id="share-btn" class="share-btn">📤 مشاركة الإجابة</button>
+                <button id="share-btn" class="share-btn-style">📤 مشاركة الإجابة</button>
             </div>
         </div>
 
+        <!-- الأزرار الرئيسية -->
         <div class="actions">
-            <button id="btn-languages" class="action-btn">📚 اللغات</button>
-            <button id="btn-tools" class="action-btn">🛠️ الأدوات</button>
-            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 التطبيقات</button>
+            <button id="btn-languages" class="action-btn">📚 موسوعة اللغات</button>
+            <button id="btn-tools" class="action-btn">🛠️ الأدوات البرمجية</button>
+            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 تطبيقات تنفيذ الأكواد</button>
         </div>
 
+        <!-- قسم تحليل فكرة المشروع -->
         <div class="project-planner card">
-            <h2>💡 حلل فكرة مشروعك</h2>
-            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك..."></textarea>
+            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
+            <textarea id="project-idea" rows="3" placeholder="تطبيق لحجز المواعيد في العيادات"></textarea>
             <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
             <div id="project-response" class="result-box hidden"></div>
         </div>
 
+        <!-- نافذة عرض اللغات والأدوات والتطبيقات -->
         <div id="modal" class="modal hidden">
             <div class="modal-content">
                 <span id="close-modal" class="close-btn">&times;</span>
@@ -54,6 +60,7 @@
             </div>
         </div>
     </div>
+
     <script src="data.js"></script>
     <script src="script.js"></script>
 </body>
