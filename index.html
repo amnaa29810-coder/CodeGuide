@@ -3,63 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستشار البرمجة الذكي</title>
+    <title>Chat App</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- القائمة الجانبية لسجل البحث -->
+
+    <!-- زر الثلاث خطوط للقائمة الجانبية -->
+    <header class="header">
+        <button id="menuBtn" class="menu-btn" onclick="toggleSidebar()">☰</button>
+    </header>
+
+    <!-- القائمة الجانبية لعرض المحادثات المحفوظة -->
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <h3>سجل البحث 🕒</h3>
-            <span id="close-sidebar" class="close-btn">&times;</span>
+            <h3>المحادثات السابقة</h3>
+            <button onclick="toggleSidebar()" class="close-btn">✕</button>
         </div>
-        <div id="history-list"></div>
+        <ul id="historyList" class="history-list"></ul>
     </div>
 
-    <div class="container">
-        <header class="top-header">
-            <button id="menu-btn" class="menu-icon-btn">☰</button>
-            <h1>مستشار البرمجة الذكي 🚀</h1>
-        </header>
+    <!-- حاوية الشات والرسائل -->
+    <main class="chat-container">
+        <div id="chatBox" class="chat-box"></div>
 
-        <!-- قسم البحث والذكاء الاصطناعي -->
-        <div class="search-box card">
-            <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
-            <div class="input-group">
-                <input type="text" id="search-input" placeholder="ما هو الفرق بين بايثون وجافا">
-                <button id="search-btn">بحث</button>
-            </div>
-            <div id="ai-response" class="result-box hidden">
-                <div id="response-content"></div>
-                <button id="share-btn" class="share-btn-style">📤 مشاركة الإجابة</button>
-            </div>
+        <!-- مربع السؤال فارغ بدون placeholder -->
+        <div class="input-container">
+            <textarea id="userInput" rows="1"></textarea>
+            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
         </div>
-
-        <!-- الأزرار الرئيسية -->
-        <div class="actions">
-            <button id="btn-languages" class="action-btn">📚 موسوعة اللغات</button>
-            <button id="btn-tools" class="action-btn">🛠️ الأدوات البرمجية</button>
-            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 تطبيقات تنفيذ الأكواد</button>
-        </div>
-
-        <!-- قسم تحليل فكرة المشروع -->
-        <div class="project-planner card">
-            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
-            <textarea id="project-idea" rows="3" placeholder="تطبيق لحجز المواعيد في العيادات"></textarea>
-            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
-            <div id="project-response" class="result-box hidden"></div>
-        </div>
-
-        <!-- نافذة عرض اللغات والأدوات والتطبيقات -->
-        <div id="modal" class="modal hidden">
-            <div class="modal-content">
-                <span id="close-modal" class="close-btn">&times;</span>
-                <h2 id="modal-title"></h2>
-                <div id="modal-body"></div>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <script src="data.js"></script>
     <script src="script.js"></script>
