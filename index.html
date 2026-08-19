@@ -1,52 +1,69 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة البرمجة</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستشار البرمجة الذكي</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    
-    <!-- رأس الصفحة بتصميم ثلاثي الأبعاد (ثلاثة خطوط) -->
-    <header class="header-3d">
-      <h1>🚀 مستشار البرمجة</h1>
-      <p>اسأل عن أي أداة أو لغة</p>
-    </header>
-
-    <!-- شريط البحث الفوري -->
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="ابحث عن لغة، أداة، أو تطبيق...">
-      <span class="search-icon">🔍</span>
+    <!-- القائمة الجانبية لسجل المحادثات -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>📜 سجل الاستفسارات</h3>
+            <span id="close-sidebar" class="close-sidebar-btn">&times;</span>
+        </div>
+        <div id="history-list" class="history-list"></div>
     </div>
 
-    <!-- مربع السؤال (مخفي بشكل افتراضي، يظهر عند البحث) -->
-    <div class="question-card" id="questionCard">
-      <textarea id="questionText" placeholder="اكتب سؤالك التفصيلي هنا..."></textarea>
-      <div class="card-actions">
-        <button onclick="saveQuestion()" class="btn-save">💾 حفظ السؤال</button>
-        <button onclick="shareContent()" class="btn-share">📤 مشاركة</button>
-        <button onclick="copyLink()" class="btn-copy">📋 نسخ الرابط</button>
-      </div>
+    <!-- غطاء القائمة الجانبية -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <div class="container">
+        <header class="main-header">
+            <button id="open-sidebar" class="menu-btn">☰</button>
+            <h1>مستشار البرمجة الذكي 🚀</h1>
+        </header>
+
+        <!-- قسم البحث والذكاء الاصطناعي -->
+        <div class="search-box card">
+            <label for="search-input">ابحث عن أي معلومة أو لغة:</label>
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="">
+                <button id="search-btn">بحث</button>
+            </div>
+            <div id="ai-response" class="result-box hidden"></div>
+            <button id="share-search-btn" class="share-btn hidden">📤 مشاركة الإجابة</button>
+        </div>
+
+        <!-- الأزرار الرئيسية -->
+        <div class="actions">
+            <button id="btn-languages" class="action-btn">📚 موسوعة اللغات</button>
+            <button id="btn-tools" class="action-btn">🛠️ الأدوات البرمجية</button>
+            <button id="btn-ide-apps" class="action-btn highlight-btn">📱 تطبيقات تنفيذ الأكواد</button>
+        </div>
+
+        <!-- قسم تحليل فكرة المشروع -->
+        <div class="project-planner card">
+            <h2>💡 حلل فكرة مشروعك بالذكاء الاصطناعي</h2>
+            <textarea id="project-idea" rows="3" placeholder=""></textarea>
+            <button id="analyze-project-btn">حلل المشروع واقترح التقنيات</button>
+            <div id="project-response" class="result-box hidden"></div>
+            <button id="share-project-btn" class="share-btn hidden">📤 مشاركة التحليل</button>
+        </div>
+
+        <!-- نافذة عرض اللغات والأدوات والتطبيقات المنبثقة -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
+            </div>
+        </div>
     </div>
 
-    <!-- عرض النتائج (البطاقات) -->
-    <div id="resultsContainer" class="results-grid">
-      <!-- ستظهر النتائج هنا عبر JavaScript -->
-    </div>
-
-    <!-- قسم المحفوظات (ثلاثي الأبعاد) -->
-    <section class="archive-section">
-      <h2 onclick="toggleArchive()" class="archive-toggle">📂 الأسئلة المحفوظة (اضغط للعرض)</h2>
-      <div id="archiveList" class="archive-list hidden">
-        <!-- ستظهر المحفوظات هنا -->
-      </div>
-    </section>
-
-  </div>
-
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
