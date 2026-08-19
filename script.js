@@ -19,7 +19,7 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// إنشاء أيقونة القائمة الجانبية لسجل المحادثات
+// إنشاء زر السجل الجانبي
 function createHistorySidebar() {
     if (document.getElementById("chat-history-trigger")) return;
 
@@ -46,7 +46,7 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// عرض السجل
+// فتح سجل المحادثات
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
@@ -59,7 +59,7 @@ function openHistoryModal() {
         content += `
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px;">
                 <div style="font-size:11px; color:#64748b; margin-bottom:4px;">🕒 ${item.date}</div>
-                <div style="font-weight:bold; color:#1e293b; margin-bottom:6px;">سؤال: ${item.question}</div>
+                <div style="font-weight:bold; color:#1e293b; margin-bottom:6px;">السؤال: ${item.question}</div>
                 <div style="font-size:13px; color:#334155;">${formatMarkdown(item.answer)}</div>
             </div>
         `;
@@ -68,7 +68,7 @@ function openHistoryModal() {
     showModal("📜 سجل المحادثات الاستشارية", content);
 }
 
-// فتح النافذة المنبثقة
+// عرض النافذة المنبثقة
 function showModal(title, htmlContent) {
     modalTitle.innerText = title;
     modalBody.innerHTML = htmlContent;
@@ -81,48 +81,75 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
+// دالة تصفية المكونات داخلياً عبر مربع البحث
+function setupInternalSearch(dataArray, renderFunction) {
+    const searchBoxHtml = `
+        <input type="text" id="modal-internal-search" placeholder="🔍 ابحث بالاسم أو التفاصيل..." 
+               style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px;">
+        <div id="modal-items-container"></div>
+    `;
+    return { searchBoxHtml, bindEvent: () => {
+        const input = document.getElementById("modal-internal-search");
+        const container = document.getElementById("modal-items-container");
+        
+        const updateList = (filterText = "") => {
+            const filtered = dataArray.filter(item => 
+                item.name.toLowerCase().includes(filterText.toLowerCase()) || 
+                (item.desc && item.desc.toLowerCase().includes(filterText.toLowerCase()))
+            );
+            container.innerHTML = renderFunction(filtered);
+        };
+        
+        updateList();
+        input.oninput = (e) => updateList(e.target.value);
+    }};
+}
+
 // 1. زر موسوعة اللغات
 btnLanguages.onclick = () => {
-    let content = "";
-    programmingLanguages.forEach(item => {
-        content += `
+    const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
+        return items.map(item => `
             <div class="info-card">
                 <h4>${item.name}</h4>
                 <p>${item.desc}</p>
             </div>
-        `;
+        `).join('');
     });
-    showModal("📚 موسوعة لغات البرمجة الشاملة", content);
+
+    showModal("📚 موسوعة لغات البرمجة", searchSetup.searchBoxHtml);
+    searchSetup.bindEvent();
 };
 
 // 2. زر الأدوات البرمجية
 btnTools.onclick = () => {
-    let content = "";
-    devTools.forEach(item => {
-        content += `
+    const searchSetup = setupInternalSearch(devTools, (items) => {
+        return items.map(item => `
             <div class="info-card">
                 <h4>${item.name}</h4>
                 <p>${item.desc}</p>
             </div>
-        `;
+        `).join('');
     });
-    showModal("🛠️ الأدوات البرمجية والتقنيات", content);
+
+    showModal("🛠️ الأدوات البرمجية والتقنيات", searchSetup.searchBoxHtml);
+    searchSetup.bindEvent();
 };
 
 // 3. زر تطبيقات وبيئات التشغيل
 btnIdeApps.onclick = () => {
-    let content = "";
-    executionApps.forEach(app => {
-        content += `
+    const searchSetup = setupInternalSearch(executionApps, (items) => {
+        return items.map(app => `
             <div class="info-card">
                 <h4>${app.name}</h4>
                 <span class="tag-badge">${app.category}</span>
                 <p style="margin-top:6px;">${app.desc}</p>
                 <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
             </div>
-        `;
+        `).join('');
     });
-    showModal("📱 تطبيقات ومحررات تنفيذ الأكواد", content);
+
+    showModal("📱 تطبيقات ومحررات الأكواد", searchSetup.searchBoxHtml);
+    searchSetup.bindEvent();
 };
 
 // تنسيق نصوص الماركداون
@@ -140,9 +167,9 @@ function saveChatToHistory(question, answer) {
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// الاتصال المباشر بالنموذج المعتمد والحديث gemini-2.5-flash
+// الاتصال المباشر بالنموذج المطلوب gemini-3.6-flash
 async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const response = await fetch(url, {
         method: "POST",
@@ -161,16 +188,16 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الإجابة مع زري النسخ والمشاركة عبر التطبيقات
+// عرض الإجابة في واجهة براها مع زري النسخ والمشاركة
 function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
     
     container.innerHTML = `
-        <div id="response-text-content">${formattedHtml}</div>
+        <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">${formattedHtml}</div>
         <div style="display:flex; gap:10px; margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
-            <button id="copy-response-btn" style="flex:1; padding:8px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
-            <button id="share-response-btn" style="flex:1; padding:8px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">📲 مشاركة عبر التطبيقات</button>
+            <button id="copy-response-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
+            <button id="share-response-btn" style="flex:1; padding:10px; background:#16a34a; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📲 مشاركة عبر التطبيقات</button>
         </div>
     `;
 
@@ -180,16 +207,16 @@ function renderResponseWithTools(rawText) {
     // زر النسخ
     document.getElementById("copy-response-btn").onclick = () => {
         navigator.clipboard.writeText(rawText).then(() => {
-            alert("تم نسخ النص للحافظة بنجاح!");
+            alert("تم نسخ الإجابة بنجاح!");
         });
     };
 
-    // زر المشاركة للتطبيقات
+    // زر المشاركة لعرض كافة تطبيقات الهاتف
     document.getElementById("share-response-btn").onclick = async () => {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'استشارة من مستشار البرمجة',
+                    title: 'إجابة مستشار البرمجة',
                     text: rawText
                 });
             } catch (err) {
@@ -197,23 +224,22 @@ function renderResponseWithTools(rawText) {
             }
         } else {
             navigator.clipboard.writeText(rawText);
-            alert("ميزة المشاركة المباشرة غير مدعومة في المتصفح الحالي، تم نسخ النص لتتمكن من لصقه في أي تطبيق!");
+            alert("تم نسخ النص لتتمكن من لصقه ومشاركته في أي تطبيق!");
         }
     };
 }
 
-// البحث والاستشارة بـ الذكاء الاصطناعي
+// البحث والاستشارة
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    // تفريغ المربع فوراً
-    searchInput.value = "";
+    searchInput.value = ""; // اختفاء النص فوراً
 
-    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري الحصول على الإجابة بالذكاء الاصطناعي...</p>");
+    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري معالجة الإجابة والتفكير...</p>");
 
     try {
-        const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي الشامل بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
+        const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
         const result = await callGemini(prompt);
         saveChatToHistory(query, result);
         renderResponseWithTools(result);
@@ -227,8 +253,7 @@ analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
-    // تفريغ المربع فوراً
-    projectIdea.value = "";
+    projectIdea.value = ""; // اختفاء النص فوراً
 
     showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح الخطة الكاملة...</p>");
 
@@ -246,6 +271,6 @@ analyzeProjectBtn.onclick = async () => {
     }
 };
 
-// تهيئة زر السجل الجانبي
+// تهيئة زر السجل عند التحميل
 document.addEventListener("DOMContentLoaded", createHistorySidebar);
 createHistorySidebar();
