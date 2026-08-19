@@ -1,25 +1,78 @@
-// data.js - قاعدة البيانات الموسعة
-const dataBase = {
-  categories: [
+const programmingLanguages = [
+    { name: "Python (بايثون)", desc: "لغة سهلة وقوية جداً، ممتازة للذكاء الاصطناعي، تحليل البيانات، الويب، والأتمتة." },
+    { name: "JavaScript (جافاسكريبت)", desc: "لغة الويب الأساسية لتطوير الواجهات التفاعلية، الخوادم (Node.js)، وتطبيقات الهواتف." },
+    { name: "TypeScript (تايب سكريبت)", desc: "نسخة محسّنة من جافاسكريبت توفر نظام الأنواع الثابتة لبناء مشاريع ضخمة وخالية من الأخطاء." },
+    { name: "Java (جافا)", desc: "لغة قوية ومستقرة تُستخدم في تطبيقات الأندرويد، الأنظمة السحابية، والأنظمة المالية." },
+    { name: "Kotlin (كوتلن)", desc: "اللغة الرسمية الموصى بها من Google لتطوير تطبيقات الأندرويد الحديثة." },
+    { name: "Swift (سويفت)", desc: "اللغة الرسمية المعتمدة من شركة Apple لتطوير تطبيقات iOS و macOS." },
+    { name: "C++ (سي بلس بلس)", desc: "لغة فائقة السرعة للأنظمة المدمجة، محركات الألعاب (Unreal Engine)، والتطبيقات عالية الأداء." },
+    { name: "C# (سي شارب)", desc: "لغة ممتازة لتطوير برامج Windows والألعاب عبر محرك Unity وتطبيقات الـ .NET." },
+    { name: "PHP", desc: "لغة خوادم شهيرة لبناء المواقع الديناميكية، وهي المشغلة لنظام وردبريس (WordPress)." },
+    { name: "Go (Golang)", desc: "لغة سريعة جداً من تطوير Google لبناء الأنظمة السحابية والخدمات الدقيقة (Microservices)." },
+    { name: "Rust (رست)", desc: "لغة أنظمة حديثة تركز على الأمان التام للذاكرة والأداء الأقصى." },
+    { name: "Dart / Flutter", desc: "لغة إطار عمل Flutter لبناء تطبيقات متعددة المنصات (أندرويد، آيفون، ويب) بكود واحد." },
+    { name: "SQL", desc: "لغة الاستعلام عن قواعد البيانات وتخزين واسترجاع البيانات الهيكلية." },
+    { name: "HTML5 / CSS3", desc: "لغتا بناء هيكل وتنسيق واجهات الصفحات والمواقع الإلكترونية." }
+];
+
+const devTools = [
+    { name: "Git", desc: "نظام تتبع إصدارات الأكواد وإدارة التغيرات برمجياً." },
+    { name: "GitHub / GitLab", desc: "منصات سحابية لحفظ المشاريع البرمجية والعمل الجماعي عليها." },
+    { name: "Docker", desc: "أداة إنشاء الحاويات المعزولة لتشغيل التطبيقات بنفس البيئة في أي مكان." },
+    { name: "Postman", desc: "أداة احترافية لاختبار وتوثيق واجهات برمجة التطبيقات (APIs)." },
+    { name: "VS Code", desc: "محرر الأكواد الأكثر انتشاراً مع آلاف الإضافات البرمجية." },
+    { name: "Firebase", desc: "منصة سحابية توفر قواعد بيانات فورية وتوثيق للمستخدمين." },
+    { name: "NPM / Yarn", desc: "مديرات الحزم المعتمدة لتثبيت مكتبات جافاسكريبت وNode.js." },
+    { name: "Vite", desc: "أداة بناء وتجهيز مشاريع الويب الحديثة بسرعة فائقة." }
+];
+
+const executionApps = [
     {
-      name: "لغات برمجة",
-      items: ["Python", "Java", "JavaScript", "C++", "C#", "PHP", "Ruby", "Swift", "Kotlin", "Go", "Rust", "TypeScript", "MATLAB", "Perl", "Scala"]
+        name: "💻 Visual Studio Code",
+        category: "كمبيوتر (Windows / Mac / Linux)",
+        desc: "أقوى محرر أكواد مجاني يدعم جميع لغات البرمجة مع دعم كامل للذكاء الاصطناعي والإضافات.",
+        uses: "HTML/CSS/JS, Python, C++, Java, Flutter, PHP, Go"
     },
     {
-      name: "أدوات تطوير (DevOps)",
-      items: ["Git", "Docker", "Kubernetes", "Jenkins", "Ansible", "Terraform", "Grafana", "Prometheus", "Linux", "Bash"]
+        name: "🌐 Replit",
+        category: "المتصفح والهاتف (Android / iOS)",
+        desc: "بيئة تطوير سحابية متكاملة تتيح لك كتابة وتشغيل ومشاركة الأكواد مباشرة من الهاتف أو المتصفح.",
+        uses: "Python, C++, Java, Node.js, HTML/CSS"
     },
     {
-      name: "قواعد بيانات",
-      items: ["MySQL", "PostgreSQL", "MongoDB", "Oracle", "SQLite", "Redis", "Firebase", "Cassandra"]
+        name: "📱 Pydroid 3",
+        category: "هواتف أندرويد",
+        desc: "أفضل بيئة مجانية لتشغيل أكواد لغة بايثون بدون إنترنت مع دعم الواجهات المكتبية والذكاء الاصطناعي.",
+        uses: "Python 3"
     },
     {
-      name: "أطر عمل (Frameworks)",
-      items: ["React", "Angular", "Vue.js", "Django", "Flask", "Laravel", "Spring Boot", "ASP.NET", "Flutter", "React Native"]
+        name: "📱 Acode",
+        category: "هواتف أندرويد",
+        desc: "محرر أكواد خفيف وقوي لتطوير مواقع الويب وتجربتها مع معاينة حية مباشرة.",
+        uses: "HTML, CSS, JavaScript"
     },
     {
-      name: "تطبيقات وبرامج",
-      items: ["VS Code", "IntelliJ IDEA", "PyCharm", "Android Studio", "Xcode", "Figma", "Adobe Photoshop", "Premiere Pro", "Blender", "Unity"]
+        name: "📱 Termux",
+        category: "هواتف أندرويد",
+        desc: "طرفية نظام لينكس كاملة للهاتف تتيح لك تثبيت وتشغيل بايثون، Node.js، C، والأدوات الاحترافية.",
+        uses: "Python, Node.js, C/C++, Git"
+    },
+    {
+        name: "💻 Android Studio",
+        category: "كمبيوتر",
+        desc: "البيئة الرسمية لبناء وتصميم تطبيقات الأندرويد برمجياً.",
+        uses: "Java, Kotlin, Flutter"
+    },
+    {
+        name: "🌐 CodeSandbox / StackBlitz",
+        category: "المتصفح",
+        desc: "منصات سحابية فورية لبناء وتجربة تطبيقات الويب التفاعلية مباشرة عبر المتصفح.",
+        uses: "React, Vue, Angular, Node.js"
+    },
+    {
+        name: "📱 Programming Hero / SoloLearn",
+        category: "هواتف (Android / iOS)",
+        desc: "تطبيقات تعليمية تحتوي على محرر داخلي لتنفيذ وتجربة الأكواد خطوة بخطوة أثناء التعلم.",
+        uses: "Python, JS, C++, Java, HTML"
     }
-  ]
-};
+];
