@@ -46,26 +46,36 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// فتح سجل المحادثات
+// عرض السجل - يظهر اسم الحاجة المبحوث عنها فقط
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
-        showModal("📜 سجل المحادثات الاستشارية", "<p style='text-align:center; padding:20px;'>لا يوجد سجل محادثات محفوظ حتى الآن.</p>");
+        showModal("📜 سجل المحادثات", "<p style='text-align:center; padding:20px;'>لا يوجد سجل محادثات حتى الآن.</p>");
         return;
     }
 
-    let content = `<div style="max-height:350px; overflow-y:auto;">`;
-    history.slice().reverse().forEach((item) => {
+    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
+    history.slice().reverse().forEach((item, index) => {
         content += `
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:10px;">
-                <div style="font-size:11px; color:#64748b; margin-bottom:4px;">🕒 ${item.date}</div>
-                <div style="font-weight:bold; color:#1e293b; margin-bottom:6px;">السؤال: ${item.question}</div>
-                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.answer)}</div>
+            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; cursor:pointer; transition:0.2s;">
+                <div style="font-size:11px; color:#64748b; margin-bottom:2px;">🕒 ${item.date}</div>
+                <div style="font-weight:bold; color:#1d4ed8; font-size:14px;">🔍 ${item.question}</div>
             </div>
         `;
     });
     content += `</div>`;
-    showModal("📜 سجل المحادثات الاستشارية", content);
+    
+    showModal("📜 سجل البحث والمحادثات", content);
+
+    // إضافة إمكانية الضغط على اسم الموضوع لرؤية الفكرة والتفاصيل
+    document.querySelectorAll(".history-item").forEach(el => {
+        el.onclick = () => {
+            const idx = el.getAttribute("data-index");
+            const selected = history[idx];
+            showModal(`💡 ${selected.question}`, "");
+            renderResponseWithTools(selected.answer);
+        };
+    });
 }
 
 // عرض النافذة المنبثقة
@@ -81,7 +91,7 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
-// دالة تصفية المكونات داخلياً عبر مربع البحث
+// تصفية العناصر داخلياً
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 ابحث بالاسم أو التفاصيل..." 
@@ -105,37 +115,23 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// 1. زر موسوعة اللغات
+// أزرار الأقسام المدمجة
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
-        return items.map(item => `
-            <div class="info-card">
-                <h4>${item.name}</h4>
-                <p>${item.desc}</p>
-            </div>
-        `).join('');
+        return items.map(item => `<div class="info-card"><h4>${item.name}</h4><p>${item.desc}</p></div>`).join('');
     });
-
     showModal("📚 موسوعة لغات البرمجة", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
-// 2. زر الأدوات البرمجية
 btnTools.onclick = () => {
     const searchSetup = setupInternalSearch(devTools, (items) => {
-        return items.map(item => `
-            <div class="info-card">
-                <h4>${item.name}</h4>
-                <p>${item.desc}</p>
-            </div>
-        `).join('');
+        return items.map(item => `<div class="info-card"><h4>${item.name}</h4><p>${item.desc}</p></div>`).join('');
     });
-
     showModal("🛠️ الأدوات البرمجية والتقنيات", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
-// 3. زر تطبيقات وبيئات التشغيل
 btnIdeApps.onclick = () => {
     const searchSetup = setupInternalSearch(executionApps, (items) => {
         return items.map(app => `
@@ -147,7 +143,6 @@ btnIdeApps.onclick = () => {
             </div>
         `).join('');
     });
-
     showModal("📱 تطبيقات ومحررات الأكواد", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
@@ -163,11 +158,11 @@ function formatMarkdown(text) {
 // حفظ المحادثة في الذاكرة المحلية
 function saveChatToHistory(question, answer) {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    history.push({ question, answer, date: new Date().toLocaleString("ar-EG") });
+    history.push({ question, answer, date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) });
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// الاتصال المباشر بالنموذج المطلوب gemini-3.6-flash
+// طلب سريع ومباشر للذكاء الاصطناعي بدون تأخير
 async function callGemini(promptText) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
@@ -181,14 +176,14 @@ async function callGemini(promptText) {
 
     if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي.");
+        throw new Error(errData.error?.message || "تعذر الاتصال بالخدمة.");
     }
 
     const data = await response.json();
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الإجابة في واجهة براها مع زري النسخ والمشاركة
+// عرض الإجابة مع أزرار النسخ والمشاركة المباشرة عبر تطبيقات الجهاز الحقيقية
 function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
@@ -197,7 +192,7 @@ function renderResponseWithTools(rawText) {
         <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">${formattedHtml}</div>
         <div style="display:flex; gap:10px; margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
             <button id="copy-response-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
-            <button id="share-response-btn" style="flex:1; padding:10px; background:#16a34a; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📲 مشاركة عبر التطبيقات</button>
+            <button id="share-response-btn" style="flex:1; padding:10px; background:#16a34a; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📲 مشاركة</button>
         </div>
     `;
 
@@ -207,20 +202,20 @@ function renderResponseWithTools(rawText) {
     // زر النسخ
     document.getElementById("copy-response-btn").onclick = () => {
         navigator.clipboard.writeText(rawText).then(() => {
-            alert("تم نسخ الإجابة بنجاح!");
+            alert("تم نسخ النص بنجاح!");
         });
     };
 
-    // زر المشاركة لعرض كافة تطبيقات الهاتف
+    // زر المشاركة للتطبيقات الحقيقية الموجودة في الهاتف (مثل Gemini)
     document.getElementById("share-response-btn").onclick = async () => {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'إجابة مستشار البرمجة',
+                    title: 'مستشار البرمجة الذكي',
                     text: rawText
                 });
             } catch (err) {
-                console.log("تم إلغاء المشاركة.");
+                console.log("إلغاء المشاركة.");
             }
         } else {
             navigator.clipboard.writeText(rawText);
@@ -229,17 +224,17 @@ function renderResponseWithTools(rawText) {
     };
 }
 
-// البحث والاستشارة
+// البحث والاستشارة بطلب مبسط وسريع
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
     searchInput.value = ""; // اختفاء النص فوراً
 
-    showModal("🔍 نتيجة البحث والاستشارة", "<p style='text-align:center; padding:20px;'>⏳ جاري معالجة الإجابة والتفكير...</p>");
+    showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:20px;'>⚡ جاري جلب الإجابة بسرعة...</p>");
 
     try {
-        const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
+        const prompt = `أجب بإيجاز واحترافية باللغة العربية على:\n"${query}"`;
         const result = await callGemini(prompt);
         saveChatToHistory(query, result);
         renderResponseWithTools(result);
@@ -248,20 +243,17 @@ searchBtn.onclick = async () => {
     }
 };
 
-// تحليل فكرة المشروع
+// تحليل فكرة المشروع بطلب سريع ومباشر
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
     projectIdea.value = ""; // اختفاء النص فوراً
 
-    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⏳ جاري دراسة الفكرة واقتراح الخطة الكاملة...</p>");
+    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⚡ جاري تحليل الفكرة بلمح البصر...</p>");
 
     try {
-        const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح التالي بتنسيق واضح ونقاط:
-1. أفضل لغات البرمجة وأطر العمل المناسبة (Frontend, Backend, Database).
-2. الأدوات وتطبيقات التنفيذ الموصى بها لبدء العمل.
-3. خطوات التنفيذ الأساسية بالتفصيل.`;
+        const prompt = `حلل فكرة المشروع التالية واقترح التقنيات والخطوات بشكل مباشر ومختصر:\n"${idea}"`;
         
         const result = await callGemini(prompt);
         saveChatToHistory(idea, result);
@@ -271,6 +263,6 @@ analyzeProjectBtn.onclick = async () => {
     }
 };
 
-// تهيئة زر السجل عند التحميل
+// تهيئة زر السجل الجانبي
 document.addEventListener("DOMContentLoaded", createHistorySidebar);
 createHistorySidebar();
