@@ -1,30 +1,25 @@
-const programmingLanguages = [
-    { name: "Python", desc: "أقوى لغة للذكاء الاصطناعي، تعلّم الآلة، وعلوم البيانات." },
-    { name: "JavaScript", desc: "لغة الويب الأولى لتصميم واجهات وتطبيقات تفاعلية." },
-    { name: "Java", desc: "لغة الشركات الكبرى وبناء تطبيقات أندرويد المستقرة." },
-    { name: "C++", desc: "لغة فائقة السرعة تستخدم لبناء برامج الأنظمة ومحركات الألعاب." },
-    { name: "C#", desc: "لغة مايكروسوفت الأساسية المعتمدة في محرك الألعاب Unity." },
-    { name: "PHP", desc: "تُستخدم في تطوير خلفيات مواقع الويب ونظام ووردبريس." },
-    { name: "Kotlin", desc: "اللغة الرسمية الحديثة والمعتمدة لتطوير تطبيقات الأندرويد." },
-    { name: "Swift", desc: "لغة أبل الرسمية والوحيدة لبناء تطبيقات الآيفون والماك." },
-    { name: "SQL", desc: "لغة إنشاء وإدارة قواعد البيانات لجميع الأنظمة." },
-    { name: "Dart / Flutter", desc: "إطار عمل يتيح بناء تطبيقات للأندرويد والآيفون بكود واحد." }
-];
-
-const devTools = [
-    { name: "Git & GitHub", desc: "لحفظ النسخ البرمجية وإدارة المشاريع الجماعية." },
-    { name: "Postman", desc: "أداة ممتازة لاختبار واستدعاء الـ APIs." },
-    { name: "Docker", desc: "حزم البرامج لتشغيلها في بيئات معزولة ومضمونة." },
-    { name: "Firebase", desc: "منصة جوجل الجاهزة للبيانات والإنذارات والمستخدمين." },
-    { name: "Figma", desc: "تصميم واجهات المستخدم والتطبيقات بشكل احترافي." },
-    { name: "Linux Terminal", desc: "سطر الأوامر للتحكم في الخوادم والبرمجة المتقدمة." }
-];
-
-const executionApps = [
-    { name: "VS Code", category: "كمبيوتر", desc: "المحرر الأفضل عالمياً لكافة اللغات.", uses: "جميع لغات البرمجة" },
-    { name: "Replit", category: "ويب + هاتف", desc: "تشغيل وكتابة الأكواد أونلاين مباشرة.", uses: "Python, JS, C++, Java" },
-    { name: "Pydroid 3", category: "أندرويد", desc: "تطبيق لتشغيل أكواد بايثون بدون إنترنت.", uses: "Python" },
-    { name: "Acode", category: "أندرويد", desc: "محرر أكواد خفيف لتصميم برامج الويب.", uses: "HTML, CSS, JS" },
-    { name: "Termux", category: "أندرويد", desc: "بيئة لينكس كاملة داخل هاتفك.", uses: "Python, Node.js, C" },
-    { name: "CodeSandbox", category: "متصفح", desc: "إنشاء مشاريع كاملة وتجربتها فوراً.", uses: "React, Vue, Node.js" }
-];
+// data.js - قاعدة البيانات الموسعة
+const dataBase = {
+  categories: [
+    {
+      name: "لغات برمجة",
+      items: ["Python", "Java", "JavaScript", "C++", "C#", "PHP", "Ruby", "Swift", "Kotlin", "Go", "Rust", "TypeScript", "MATLAB", "Perl", "Scala"]
+    },
+    {
+      name: "أدوات تطوير (DevOps)",
+      items: ["Git", "Docker", "Kubernetes", "Jenkins", "Ansible", "Terraform", "Grafana", "Prometheus", "Linux", "Bash"]
+    },
+    {
+      name: "قواعد بيانات",
+      items: ["MySQL", "PostgreSQL", "MongoDB", "Oracle", "SQLite", "Redis", "Firebase", "Cassandra"]
+    },
+    {
+      name: "أطر عمل (Frameworks)",
+      items: ["React", "Angular", "Vue.js", "Django", "Flask", "Laravel", "Spring Boot", "ASP.NET", "Flutter", "React Native"]
+    },
+    {
+      name: "تطبيقات وبرامج",
+      items: ["VS Code", "IntelliJ IDEA", "PyCharm", "Android Studio", "Xcode", "Figma", "Adobe Photoshop", "Premiere Pro", "Blender", "Unity"]
+    }
+  ]
+};
