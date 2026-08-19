@@ -1,59 +1,52 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مستشار البرمجة الذكي 🚀</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة البرمجة</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- الهيدر مع زر القائمة الجانبية -->
-    <header class="header">
-        <button id="menuBtn" class="menu-icon" onclick="toggleSidebar()">☰</button>
-        <h1 class="app-title">مستشار البرمجة الذكي 🚀</h1>
+  <div class="container">
+    
+    <!-- رأس الصفحة بتصميم ثلاثي الأبعاد (ثلاثة خطوط) -->
+    <header class="header-3d">
+      <h1>🚀 مستشار البرمجة</h1>
+      <p>اسأل عن أي أداة أو لغة</p>
     </header>
 
-    <!-- القائمة الجانبية لحفظ واسترجاع الشات -->
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <h3>المحادثات السابقة</h3>
-            <button class="close-btn" onclick="toggleSidebar()">✕</button>
-        </div>
-        <ul id="historyList" class="history-list"></ul>
+    <!-- شريط البحث الفوري -->
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="ابحث عن لغة، أداة، أو تطبيق...">
+      <span class="search-icon">🔍</span>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <main class="main-content">
+    <!-- مربع السؤال (مخفي بشكل افتراضي، يظهر عند البحث) -->
+    <div class="question-card" id="questionCard">
+      <textarea id="questionText" placeholder="اكتب سؤالك التفصيلي هنا..."></textarea>
+      <div class="card-actions">
+        <button onclick="saveQuestion()" class="btn-save">💾 حفظ السؤال</button>
+        <button onclick="shareContent()" class="btn-share">📤 مشاركة</button>
+        <button onclick="copyLink()" class="btn-copy">📋 نسخ الرابط</button>
+      </div>
+    </div>
 
-        <!-- القسم الأول: البحث -->
-        <section class="card">
-            <label class="card-title">ابحث عن أي معلومة أو لغة:</label>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="">
-                <button class="btn-primary" onclick="handleSearch()">بحث</button>
-            </div>
-            <div id="searchResult" class="result-box"></div>
-        </section>
+    <!-- عرض النتائج (البطاقات) -->
+    <div id="resultsContainer" class="results-grid">
+      <!-- ستظهر النتائج هنا عبر JavaScript -->
+    </div>
 
-        <!-- القسم الثاني: خيارات سريعة -->
-        <section class="quick-buttons">
-            <button class="btn-chip">📚 موسوعة اللغات</button>
-            <button class="btn-chip">🛠️ الأدوات البرمجية</button>
-            <button class="btn-chip">📱 تطبيقات تنفيذ الأكواد</button>
-        </section>
+    <!-- قسم المحفوظات (ثلاثي الأبعاد) -->
+    <section class="archive-section">
+      <h2 onclick="toggleArchive()" class="archive-toggle">📂 الأسئلة المحفوظة (اضغط للعرض)</h2>
+      <div id="archiveList" class="archive-list hidden">
+        <!-- ستظهر المحفوظات هنا -->
+      </div>
+    </section>
 
-        <!-- القسم الثالث: تحليل الفكرة -->
-        <section class="card">
-            <label class="card-title">💡 حلل فكرة مشروعك بالذكاء الاصطناعي</label>
-            <textarea id="projectInput" rows="3" placeholder=""></textarea>
-            <button class="btn-action" onclick="analyzeProject()">حلل المشروع واقترح التقنيات</button>
-            <div id="projectResult" class="result-box"></div>
-        </section>
+  </div>
 
-    </main>
-
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+  <script src="data.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
