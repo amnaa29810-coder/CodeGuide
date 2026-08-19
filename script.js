@@ -1,10 +1,8 @@
-// مفتاح الـ API المضمن
 const partA = "AQ.Ab8RN6LeWJ20BDRn";
 const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
 const GEMINI_API_KEY = partA + partB + partC;
 
-// عناصر الواجهة
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -42,11 +40,10 @@ function createHistorySidebar() {
         font-size: 14px;
     `;
     document.body.appendChild(btn);
-
     btn.onclick = openHistoryModal;
 }
 
-// عرض السجل - اسم الحاجة المبحوث عنها فقط
+// السجل - عرض اسم الموضوع فقط
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
@@ -77,20 +74,26 @@ function openHistoryModal() {
     });
 }
 
-// عرض النافذة المنبثقة
 function showModal(title, htmlContent) {
     modalTitle.innerText = title;
     modalBody.innerHTML = htmlContent;
     modal.classList.remove("hidden");
 }
 
-// إغلاق النافذة
 closeModal.onclick = () => modal.classList.add("hidden");
 window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
-// تصفية العناصر داخلياً
+// تنسيق نصوص الماركداون
+function formatMarkdown(text) {
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+}
+
+// دالة تصفية البحث مع زر نسخ لكل عنصر
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 ابحث بالاسم أو التفاصيل..." 
@@ -107,6 +110,16 @@ function setupInternalSearch(dataArray, renderFunction) {
                 (item.desc && item.desc.toLowerCase().includes(filterText.toLowerCase()))
             );
             container.innerHTML = renderFunction(filtered);
+
+            // تفعيل أزرار النسخ المنفردة لكل عنصر
+            document.querySelectorAll(".copy-item-btn").forEach(btn => {
+                btn.onclick = (e) => {
+                    const textToCopy = e.target.getAttribute("data-copy");
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        alert("تم نسخ معلومات هذا العنصر بنجاح!");
+                    });
+                };
+            });
         };
         
         updateList();
@@ -114,45 +127,61 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// أزرار الأقسام الرئيسية
+// 1. زر موسوعة اللغات
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
-        return items.map(item => `<div class="info-card"><h4>${item.name}</h4><p>${item.desc}</p></div>`).join('');
+        return items.map(item => `
+            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
+                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.5;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" 
+                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
+                    📋 نسخ معلومات ${item.name}
+                </button>
+            </div>
+        `).join('');
     });
     showModal("📚 موسوعة لغات البرمجة", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
+// 2. زر الأدوات البرمجية
 btnTools.onclick = () => {
     const searchSetup = setupInternalSearch(devTools, (items) => {
-        return items.map(item => `<div class="info-card"><h4>${item.name}</h4><p>${item.desc}</p></div>`).join('');
+        return items.map(item => `
+            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
+                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.5;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" 
+                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
+                    📋 نسخ معلومات ${item.name}
+                </button>
+            </div>
+        `).join('');
     });
     showModal("🛠️ الأدوات البرمجية والتقنيات", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
+// 3. زر تطبيقات وبيئات الأكواد
 btnIdeApps.onclick = () => {
     const searchSetup = setupInternalSearch(executionApps, (items) => {
         return items.map(app => `
-            <div class="info-card">
-                <h4>${app.name}</h4>
-                <span class="tag-badge">${app.category}</span>
-                <p style="margin-top:6px;">${app.desc}</p>
+            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
+                <h4 style="color:#1d4ed8; margin-bottom:4px;">${app.name}</h4>
+                <span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${app.category}</span>
+                <div style="font-size:13px; color:#334155; margin-top:8px; line-height:1.5;">${formatMarkdown(app.desc)}</div>
                 <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
+                <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}\nالاستخدامات: ${app.uses}" 
+                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
+                    📋 نسخ معلومات ${app.name}
+                </button>
             </div>
         `).join('');
     });
     showModal("📱 تطبيقات ومحررات الأكواد", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
-
-// تنسيق نصوص الماركداون
-function formatMarkdown(text) {
-    return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>');
-}
 
 // حفظ المحادثة
 function saveChatToHistory(question, answer) {
@@ -182,7 +211,7 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الإجابة مع زر النسخ فقط
+// عرض نتائج البحث مع زر النسخ العام
 function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
@@ -190,14 +219,13 @@ function renderResponseWithTools(rawText) {
     container.innerHTML = `
         <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">${formattedHtml}</div>
         <div style="margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
-            <button id="copy-response-btn" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
+            <button id="copy-response-btn" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة كاملة</button>
         </div>
     `;
 
     modalBody.innerHTML = "";
     modalBody.appendChild(container);
 
-    // زر النسخ المباشر
     document.getElementById("copy-response-btn").onclick = () => {
         navigator.clipboard.writeText(rawText).then(() => {
             alert("تم نسخ النص بنجاح!");
@@ -244,6 +272,5 @@ analyzeProjectBtn.onclick = async () => {
     }
 };
 
-// تهيئة زر السجل
 document.addEventListener("DOMContentLoaded", createHistorySidebar);
 createHistorySidebar();
