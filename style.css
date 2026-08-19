@@ -1,188 +1,166 @@
+/* style.css - تصميم عصري ثلاثي الأبعاد */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #f4f6f9;
-    color: #1a237e;
-    direction: rtl;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* الهيدر */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px 20px;
-    background: #ffffff;
+.container {
+  max-width: 800px;
+  width: 100%;
 }
 
-.app-title {
-    font-size: 20px;
-    color: #1a237e;
-    font-weight: bold;
+/* ===== تأثير الثلاثة خطوط (3D) ===== */
+.header-3d, .search-box, .question-card, .results-grid > div, .archive-section {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* العمق ثلاثي الأبعاد (الثلاثة خطوط) */
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.5),   /* الظل الأول (العمق) */
+    0 6px 6px rgba(0, 0, 0, 0.3),     /* الظل الثاني */
+    inset 0 1px 0 rgba(255, 255, 255, 0.1); /* الضوء الساقط */
+  
+  transform: perspective(1000px) rotateX(2deg) translateY(-2px);
+  transition: all 0.3s ease;
 }
 
-.menu-icon {
-    background: none;
-    border: none;
-    font-size: 26px;
-    color: #1a237e;
-    cursor: pointer;
+.header-3d:hover, .question-card:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
 }
 
-/* القائمة الجانبية (الثلاث خطوط) */
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -280px;
-    width: 280px;
-    height: 100%;
-    background: #ffffff;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    transition: right 0.3s ease;
-    z-index: 1000;
-    padding: 20px;
+/* ===== إخفاء مربع السؤال ===== */
+.question-card {
+  display: none; /* مخفي تماماً حتى يظهر عبر البحث */
+  flex-direction: column;
+  gap: 15px;
 }
 
-.sidebar.open {
-    right: 0;
+.question-card.active {
+  display: flex;
 }
 
-.sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+textarea {
+  width: 100%;
+  padding: 15px;
+  border-radius: 15px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 16px;
+  resize: vertical;
+  min-height: 80px;
 }
 
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
+textarea::placeholder {
+  color: #aaa;
 }
 
-.history-list {
-    list-style: none;
+/* ===== أزرار ===== */
+.card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.history-list li {
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  flex: 1;
 }
 
-/* الكروت والتصاميم */
-.main-content {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.btn-save { background: #f39c12; color: #000; }
+.btn-share { background: #3498db; color: #fff; }
+.btn-copy { background: #2ecc71; color: #000; }
+
+button:hover {
+  transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
 
-.card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.card-title {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 12px;
-    font-size: 15px;
-    text-align: center;
-}
-
+/* ===== مربع البحث ===== */
 .search-box {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  padding: 5px 20px;
+}
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 15px 10px;
+  color: #fff;
+  font-size: 18px;
+  outline: none;
+}
+.search-box input::placeholder { color: #aaa; }
+.search-icon { font-size: 24px; margin-left: 10px; }
+
+/* ===== شبكة النتائج ===== */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
 }
 
-input[type="text"], textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    outline: none;
-    font-size: 14px;
+.results-grid > div {
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  backdrop-filter: blur(5px);
+  transform: perspective(500px) rotateY(2deg);
+  transition: 0.3s;
+  cursor: default;
+}
+.results-grid > div:hover {
+  transform: perspective(500px) rotateY(0deg) scale(1.05);
+  background: rgba(46, 204, 113, 0.3);
 }
 
-.btn-primary {
-    background: #dce4ec;
-    border: none;
-    padding: 0 20px;
-    border-radius: 10px;
-    color: #333;
-    font-weight: bold;
-    cursor: pointer;
+/* ===== المحفوظات ===== */
+.archive-section {
+  margin-top: 30px;
 }
-
-/* أزرار الصف الأوسط */
-.quick-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
+.archive-toggle {
+  cursor: pointer;
+  color: #f1c40f;
+  font-size: 20px;
 }
-
-.btn-chip {
-    flex: 1;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    padding: 10px 5px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #333;
-    cursor: pointer;
+.archive-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-
-/* الزر الأزرق الكبير */
-.btn-action {
-    width: 100%;
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: bold;
-    margin-top: 12px;
-    cursor: pointer;
-}
-
-.result-box {
-    display: none;
-    margin-top: 15px;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    font-size: 14px;
-}
-
-/* أزرار النسخ والمشاركة تحت الإجابة */
-.action-buttons-wrapper {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    justify-content: flex-end;
-}
-
-.btn-sub-action {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
+.archive-list.hidden { display: none; }
+.archive-item {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  border-radius: 12px;
+  border-right: 4px solid #f1c40f;
+  font-size: 15px;
 }
