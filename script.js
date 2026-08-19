@@ -46,7 +46,7 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// عرض السجل - اسم الحاجة فقط
+// عرض السجل - اسم الحاجة المبحوث عنها فقط
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
@@ -57,7 +57,7 @@ function openHistoryModal() {
     let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
     history.slice().reverse().forEach((item, index) => {
         content += `
-            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; cursor:pointer; transition:0.2s;">
+            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; cursor:pointer;">
                 <div style="font-size:11px; color:#64748b; margin-bottom:2px;">🕒 ${item.date}</div>
                 <div style="font-weight:bold; color:#1d4ed8; font-size:14px;">🔍 ${item.question}</div>
             </div>
@@ -114,7 +114,7 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// أزرار الأقسام المدمجة
+// أزرار الأقسام الرئيسية
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
         return items.map(item => `<div class="info-card"><h4>${item.name}</h4><p>${item.desc}</p></div>`).join('');
@@ -146,7 +146,7 @@ btnIdeApps.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// تنسيق الماركداون
+// تنسيق نصوص الماركداون
 function formatMarkdown(text) {
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -182,51 +182,26 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الإجابة مع فتح تطبيقات الهاتف الحقيقية للمشاركة
+// عرض الإجابة مع زر النسخ فقط
 function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
     
     container.innerHTML = `
         <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">${formattedHtml}</div>
-        <div style="display:flex; gap:10px; margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
-            <button id="copy-response-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
-            <button id="share-response-btn" style="flex:1; padding:10px; background:#16a34a; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📲 مشاركة</button>
+        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
+            <button id="copy-response-btn" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة</button>
         </div>
     `;
 
     modalBody.innerHTML = "";
     modalBody.appendChild(container);
 
-    // زر النسخ
+    // زر النسخ المباشر
     document.getElementById("copy-response-btn").onclick = () => {
         navigator.clipboard.writeText(rawText).then(() => {
             alert("تم نسخ النص بنجاح!");
         });
-    };
-
-    // فتح قائمة تطبيقات الهاتف الحقيقية للمشاركة Direct Web Share
-    document.getElementById("share-response-btn").onclick = async () => {
-        const shareData = {
-            title: 'مستشار البرمجة الذكي',
-            text: rawText
-        };
-
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.log("تم إغلاق نافذة المشاركة.");
-            }
-        } else if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.log("تم إغلاق نافذة المشاركة.");
-            }
-        } else {
-            alert("متصفحك لا يدعم فتح قائمة التطبيقات مباشرة. يمكنك استخدام زر النسخ.");
-        }
     };
 }
 
