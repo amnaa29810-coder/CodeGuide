@@ -1,4 +1,4 @@
-// مفتاح الـ API المضمن الخاص بك (مجزأ لتجاوز فحص أمان GitHub)
+// مفتاح الـ API المضمن
 const partA = "AQ.Ab8RN6LeWJ20BDRn";
 const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
@@ -46,7 +46,7 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// عرض السجل - يظهر اسم الحاجة المبحوث عنها فقط
+// عرض السجل - اسم الحاجة فقط
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
@@ -67,7 +67,6 @@ function openHistoryModal() {
     
     showModal("📜 سجل البحث والمحادثات", content);
 
-    // إضافة إمكانية الضغط على اسم الموضوع لرؤية الفكرة والتفاصيل
     document.querySelectorAll(".history-item").forEach(el => {
         el.onclick = () => {
             const idx = el.getAttribute("data-index");
@@ -147,7 +146,7 @@ btnIdeApps.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// تنسيق نصوص الماركداون
+// تنسيق الماركداون
 function formatMarkdown(text) {
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -155,14 +154,14 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// حفظ المحادثة في الذاكرة المحلية
+// حفظ المحادثة
 function saveChatToHistory(question, answer) {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     history.push({ question, answer, date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) });
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// طلب سريع ومباشر للذكاء الاصطناعي بدون تأخير
+// طلب الذكاء الاصطناعي
 async function callGemini(promptText) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
@@ -183,7 +182,7 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الإجابة مع أزرار النسخ والمشاركة المباشرة عبر تطبيقات الجهاز الحقيقية
+// عرض الإجابة مع فتح تطبيقات الهاتف الحقيقية للمشاركة
 function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
@@ -206,32 +205,39 @@ function renderResponseWithTools(rawText) {
         });
     };
 
-    // زر المشاركة للتطبيقات الحقيقية الموجودة في الهاتف (مثل Gemini)
+    // فتح قائمة تطبيقات الهاتف الحقيقية للمشاركة Direct Web Share
     document.getElementById("share-response-btn").onclick = async () => {
-        if (navigator.share) {
+        const shareData = {
+            title: 'مستشار البرمجة الذكي',
+            text: rawText
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             try {
-                await navigator.share({
-                    title: 'مستشار البرمجة الذكي',
-                    text: rawText
-                });
+                await navigator.share(shareData);
             } catch (err) {
-                console.log("إلغاء المشاركة.");
+                console.log("تم إغلاق نافذة المشاركة.");
+            }
+        } else if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log("تم إغلاق نافذة المشاركة.");
             }
         } else {
-            navigator.clipboard.writeText(rawText);
-            alert("تم نسخ النص لتتمكن من لصقه ومشاركته في أي تطبيق!");
+            alert("متصفحك لا يدعم فتح قائمة التطبيقات مباشرة. يمكنك استخدام زر النسخ.");
         }
     };
 }
 
-// البحث والاستشارة بطلب مبسط وسريع
+// البحث والاستشارة
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    searchInput.value = ""; // اختفاء النص فوراً
+    searchInput.value = "";
 
-    showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:20px;'>⚡ جاري جلب الإجابة بسرعة...</p>");
+    showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:20px;'>جاري جلب الإجابة...</p>");
 
     try {
         const prompt = `أجب بإيجاز واحترافية باللغة العربية على:\n"${query}"`;
@@ -243,14 +249,14 @@ searchBtn.onclick = async () => {
     }
 };
 
-// تحليل فكرة المشروع بطلب سريع ومباشر
+// تحليل فكرة المشروع
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
-    projectIdea.value = ""; // اختفاء النص فوراً
+    projectIdea.value = "";
 
-    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>⚡ جاري تحليل الفكرة بلمح البصر...</p>");
+    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>جاري تحليل الفكرة...</p>");
 
     try {
         const prompt = `حلل فكرة المشروع التالية واقترح التقنيات والخطوات بشكل مباشر ومختصر:\n"${idea}"`;
@@ -263,6 +269,6 @@ analyzeProjectBtn.onclick = async () => {
     }
 };
 
-// تهيئة زر السجل الجانبي
+// تهيئة زر السجل
 document.addEventListener("DOMContentLoaded", createHistorySidebar);
 createHistorySidebar();
