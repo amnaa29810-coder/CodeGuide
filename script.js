@@ -1,241 +1,78 @@
-// تشفير المفتاح برمجياً لتجاوز فحص GitHub الأمني
-const _k = ["QVEuQWI4Uk42TGVX", "SjIwQkRSbmRyNTFl", "SGFOWW5zRlRTemV1", "TTJXakZqTE5LNVh3", "cnBZQWc="].join("");
-const GEMINI_API_KEY = atob(_k);
+const programmingLanguages = [
+    { name: "Python (بايثون)", desc: "لغة سهلة وقوية جداً، ممتازة للذكاء الاصطناعي، تحليل البيانات، الويب، والأتمتة." },
+    { name: "JavaScript (جافاسكريبت)", desc: "لغة الويب الأساسية لتطوير الواجهات التفاعلية، الخوادم (Node.js)، وتطبيقات الهواتف." },
+    { name: "TypeScript (تايب سكريبت)", desc: "نسخة محسّنة من جافاسكريبت توفر نظام الأنواع الثابتة لبناء مشاريع ضخمة وخالية من الأخطاء." },
+    { name: "Java (جافا)", desc: "لغة قوية ومستقرة تُستخدم في تطبيقات الأندرويد، الأنظمة السحابية، والأنظمة المالية." },
+    { name: "Kotlin (كوتلن)", desc: "اللغة الرسمية الموصى بها من Google لتطوير تطبيقات الأندرويد الحديثة." },
+    { name: "Swift (سويفت)", desc: "اللغة الرسمية المعتمدة من شركة Apple لتطوير تطبيقات iOS و macOS." },
+    { name: "C++ (سي بلس بلس)", desc: "لغة فائقة السرعة للأنظمة المدمجة، محركات الألعاب (Unreal Engine)، والتطبيقات عالية الأداء." },
+    { name: "C# (سي شارب)", desc: "لغة ممتازة لتطوير برامج Windows والألعاب عبر محرك Unity وتطبيقات الـ .NET." },
+    { name: "PHP", desc: "لغة خوادم شهيرة لبناء المواقع الديناميكية، وهي المشغلة لنظام وردبريس (WordPress)." },
+    { name: "Go (Golang)", desc: "لغة سريعة جداً من تطوير Google لبناء الأنظمة السحابية والخدمات الدقيقة (Microservices)." },
+    { name: "Rust (رست)", desc: "لغة أنظمة حديثة تركز على الأمان التام للذاكرة والأداء الأقصى." },
+    { name: "Dart / Flutter", desc: "لغة إطار عمل Flutter لبناء تطبيقات متعددة المنصات (أندرويد، آيفون، ويب) بكود واحد." },
+    { name: "SQL", desc: "لغة الاستعلام عن قواعد البيانات وتخزين واسترجاع البيانات الهيكلية." },
+    { name: "HTML5 / CSS3", desc: "لغتا بناء هيكل وتنسيق واجهات الصفحات والمواقع الإلكترونية." }
+];
 
-// عناصر الواجهة
-const searchInput = document.getElementById("search-input");
-const searchBtn = document.getElementById("search-btn");
-const aiResponse = document.getElementById("ai-response");
-const shareSearchBtn = document.getElementById("share-search-btn");
+const devTools = [
+    { name: "Git", desc: "نظام تتبع إصدارات الأكواد وإدارة التغيرات برمجياً." },
+    { name: "GitHub / GitLab", desc: "منصات سحابية لحفظ المشاريع البرمجية والعمل الجماعي عليها." },
+    { name: "Docker", desc: "أداة إنشاء الحاويات المعزولة لتشغيل التطبيقات بنفس البيئة في أي مكان." },
+    { name: "Postman", desc: "أداة احترافية لاختبار وتوثيق واجهات برمجة التطبيقات (APIs)." },
+    { name: "VS Code", desc: "محرر الأكواد الأكثر انتشاراً مع آلاف الإضافات البرمجية." },
+    { name: "Firebase", desc: "منصة سحابية توفر قواعد بيانات فورية وتوثيق للمستخدمين." },
+    { name: "NPM / Yarn", desc: "مديرات الحزم المعتمدة لتثبيت مكتبات جافاسكريبت وNode.js." },
+    { name: "Vite", desc: "أداة بناء وتجهيز مشاريع الويب الحديثة بسرعة فائقة." }
+];
 
-const projectIdea = document.getElementById("project-idea");
-const analyzeProjectBtn = document.getElementById("analyze-project-btn");
-const projectResponse = document.getElementById("project-response");
-const shareProjectBtn = document.getElementById("share-project-btn");
-
-const btnLanguages = document.getElementById("btn-languages");
-const btnTools = document.getElementById("btn-tools");
-const btnIdeApps = document.getElementById("btn-ide-apps");
-
-const modal = document.getElementById("modal");
-const closeModal = document.getElementById("close-modal");
-const modalTitle = document.getElementById("modal-title");
-const modalBody = document.getElementById("modal-body");
-
-const sidebar = document.getElementById("sidebar");
-const sidebarOverlay = document.getElementById("sidebar-overlay");
-const openSidebarBtn = document.getElementById("open-sidebar");
-const closeSidebarBtn = document.getElementById("close-sidebar");
-const historyList = document.getElementById("history-list");
-
-let historyData = JSON.parse(localStorage.getItem("ai_history") || "[]");
-
-// إدارة الشريط الجانبي والسجل
-function renderHistory() {
-    historyList.innerHTML = "";
-    if (historyData.length === 0) {
-        historyList.innerHTML = "<p class='no-history'>لا يوجد سجل محادثات حتى الآن.</p>";
-        return;
+const executionApps = [
+    {
+        name: "💻 Visual Studio Code",
+        category: "كمبيوتر (Windows / Mac / Linux)",
+        desc: "أقوى محرر أكواد مجاني يدعم جميع لغات البرمجة مع دعم كامل للذكاء الاصطناعي والإضافات.",
+        uses: "HTML/CSS/JS, Python, C++, Java, Flutter, PHP, Go"
+    },
+    {
+        name: "🌐 Replit",
+        category: "المتصفح والهاتف (Android / iOS)",
+        desc: "بيئة تطوير سحابية متكاملة تتيح لك كتابة وتشغيل ومشاركة الأكواد مباشرة من الهاتف أو المتصفح.",
+        uses: "Python, C++, Java, Node.js, HTML/CSS"
+    },
+    {
+        name: "📱 Pydroid 3",
+        category: "هواتف أندرويد",
+        desc: "أفضل بيئة مجانية لتشغيل أكواد لغة بايثون بدون إنترنت مع دعم الواجهات المكتبية والذكاء الاصطناعي.",
+        uses: "Python 3"
+    },
+    {
+        name: "📱 Acode",
+        category: "هواتف أندرويد",
+        desc: "محرر أكواد خفيف وقوي لتطوير مواقع الويب وتجربتها مع معاينة حية مباشرة.",
+        uses: "HTML, CSS, JavaScript"
+    },
+    {
+        name: "📱 Termux",
+        category: "هواتف أندرويد",
+        desc: "طرفية نظام لينكس كاملة للهاتف تتيح لك تثبيت وتشغيل بايثون، Node.js، C، والأدوات الاحترافية.",
+        uses: "Python, Node.js, C/C++, Git"
+    },
+    {
+        name: "💻 Android Studio",
+        category: "كمبيوتر",
+        desc: "البيئة الرسمية لبناء وتصميم تطبيقات الأندرويد برمجياً.",
+        uses: "Java, Kotlin, Flutter"
+    },
+    {
+        name: "🌐 CodeSandbox / StackBlitz",
+        category: "المتصفح",
+        desc: "منصات سحابية فورية لبناء وتجربة تطبيقات الويب التفاعلية مباشرة عبر المتصفح.",
+        uses: "React, Vue, Angular, Node.js"
+    },
+    {
+        name: "📱 Programming Hero / SoloLearn",
+        category: "هواتف (Android / iOS)",
+        desc: "تطبيقات تعليمية تحتوي على محرر داخلي لتنفيذ وتجربة الأكواد خطوة بخطوة أثناء التعلم.",
+        uses: "Python, JS, C++, Java, HTML"
     }
-
-    historyData.slice().reverse().forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.innerHTML = `<strong>${item.title}</strong><p>${item.type}</p>`;
-        div.onclick = () => {
-            if (item.type === "بحث") {
-                searchInput.value = item.query;
-                aiResponse.innerHTML = item.response;
-                aiResponse.classList.remove("hidden");
-                shareSearchBtn.classList.remove("hidden");
-            } else {
-                projectIdea.value = item.query;
-                projectResponse.innerHTML = item.response;
-                projectResponse.classList.remove("hidden");
-                shareProjectBtn.classList.remove("hidden");
-            }
-            closeSidebar();
-        };
-        historyList.appendChild(div);
-    });
-}
-
-function saveToHistory(type, title, query, response) {
-    historyData.push({ type, title, query, response });
-    localStorage.setItem("ai_history", JSON.stringify(historyData));
-    renderHistory();
-}
-
-function openSidebar() {
-    sidebar.classList.add("open");
-    sidebarOverlay.classList.add("show");
-    renderHistory();
-}
-
-function closeSidebar() {
-    sidebar.classList.remove("open");
-    sidebarOverlay.classList.remove("show");
-}
-
-openSidebarBtn.onclick = openSidebar;
-closeSidebarBtn.onclick = closeSidebar;
-sidebarOverlay.onclick = closeSidebar;
-
-// إدارة النافذة المنبثقة
-function openModal(title, contentHtml) {
-    modalTitle.innerText = title;
-    modalBody.innerHTML = contentHtml;
-    modal.classList.remove("hidden");
-}
-
-closeModal.onclick = () => modal.classList.add("hidden");
-window.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
-
-// عرض قائمة اللغات
-btnLanguages.onclick = () => {
-    let html = "<ul class='info-list'>";
-    programmingLanguages.forEach(item => {
-        html += `<li><strong>${item.name}:</strong> ${item.desc}</li>`;
-    });
-    html += "</ul>";
-    openModal("📚 موسوعة لغات البرمجة", html);
-};
-
-// عرض قائمة الأدوات
-btnTools.onclick = () => {
-    let html = "<ul class='info-list'>";
-    devTools.forEach(item => {
-        html += `<li><strong>${item.name}:</strong> ${item.desc}</li>`;
-    });
-    html += "</ul>";
-    openModal("🛠️ الأدوات البرمجية", html);
-};
-
-// عرض تطبيقات ومحررات التشغيل
-btnIdeApps.onclick = () => {
-    let html = "<div class='apps-container'>";
-    executionApps.forEach(app => {
-        html += `
-            <div class='app-card'>
-                <h3>${app.name}</h3>
-                <span class='badge'>${app.category}</span>
-                <p>${app.desc}</p>
-                <p class='uses-text'><strong>الاستخدامات:</strong> ${app.uses}</p>
-            </div>
-        `;
-    });
-    html += "</div>";
-    openModal("📱 تطبيقات ومحررات تنفيذ الأكواد", html);
-};
-
-// دالة الاتصال بـ Gemini API
-async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-        })
-    });
-
-    if (!response.ok) {
-        throw new Error("حدث خطأ أثناء الاتصال بالخادم. تأكد من صحة اتصالك بالإنترنت.");
-    }
-
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
-}
-
-function formatText(text) {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-               .replace(/\n/g, '<br>');
-}
-
-// دالة مشاركة المحتوى عبر تطبيقات الهاتف
-async function shareContent(title, text) {
-    const cleanText = text.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, "");
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: title,
-                text: cleanText
-            });
-        } catch (err) {}
-    } else {
-        alert("المشاركة غير مدعومة في هذا المتصفح.");
-    }
-}
-
-// البحث المحلي ثم بالذكاء الاصطناعي
-searchBtn.onclick = async () => {
-    const query = searchInput.value.trim();
-    if (!query) return;
-
-    aiResponse.classList.remove("hidden");
-    shareSearchBtn.classList.add("hidden");
-
-    // البحث داخل البيانات المحلية أولاً
-    const queryLower = query.toLowerCase();
-    const foundLang = programmingLanguages.find(l => l.name.toLowerCase().includes(queryLower));
-    const foundTool = devTools.find(t => t.name.toLowerCase().includes(queryLower));
-    const foundApp = executionApps.find(a => a.name.toLowerCase().includes(queryLower));
-
-    if (foundLang || foundTool || foundApp) {
-        let localResult = "";
-        if (foundLang) localResult += `<strong>${foundLang.name}:</strong> ${foundLang.desc}<br><br>`;
-        if (foundTool) localResult += `<strong>${foundTool.name}:</strong> ${foundTool.desc}<br><br>`;
-        if (foundApp) localResult += `<strong>${foundApp.name}:</strong> ${foundApp.desc} (${foundApp.uses})<br><br>`;
-        
-        aiResponse.innerHTML = localResult;
-        shareSearchBtn.classList.remove("hidden");
-        saveToHistory("بحث", query, query, localResult);
-        return;
-    }
-
-    // إذا لم تكن موجودة، يتم استدعاء الذكاء الاصطناعي
-    aiResponse.innerHTML = "⏳ جاري البحث والتفكير بالذكاء الاصطناعي...";
-
-    try {
-        const prompt = `أنت مستشار برمجيات ذكي وخبير. أجب عن هذا السؤال أو الاستفسار البرمجي بإيجاز وتنظيم ممتاز باللغة العربية:\n"${query}"`;
-        const result = await callGemini(prompt);
-        const formatted = formatText(result);
-        aiResponse.innerHTML = formatted;
-        shareSearchBtn.classList.remove("hidden");
-        saveToHistory("بحث", query, query, formatted);
-    } catch (err) {
-        aiResponse.innerHTML = `<span style="color:red;">❌ ${err.message}</span>`;
-    }
-};
-
-// تحليل المشروع
-analyzeProjectBtn.onclick = async () => {
-    const idea = projectIdea.value.trim();
-    if (!idea) return;
-
-    projectResponse.classList.remove("hidden");
-    shareProjectBtn.classList.add("hidden");
-    projectResponse.innerHTML = "⏳ جاري تحليل الفكرة واقتراح أفضل اللغات والتقنيات...";
-
-    try {
-        const prompt = `أنت مهندس برمجيات محترف ومستشار تقني. لدي فكرة مشروع:\n"${idea}"\n\nقم بتحليل الفكرة واقتراح:
-1. أفضل لغات البرمجة وأطر العمل المناسبة (Frontend, Backend, Database).
-2. الأدوات وتطبيقات التنفيذ الموصى بها لبدء العمل.
-3. خطوات التنفيذ الأساسية بشكل مرتب.`;
-        
-        const result = await callGemini(prompt);
-        const formatted = formatText(result);
-        projectResponse.innerHTML = formatted;
-        shareProjectBtn.classList.remove("hidden");
-        saveToHistory("تحليل مشروع", idea.substring(0, 25) + "...", idea, formatted);
-    } catch (err) {
-        projectResponse.innerHTML = `<span style="color:red;">❌ ${err.message}</span>`;
-    }
-};
-
-// أزرار المشاركة
-shareSearchBtn.onclick = () => shareContent("مستشار البرمجة الذكي - نتيجة البحث", aiResponse.innerHTML);
-shareProjectBtn.onclick = () => shareContent("مستشار البرمجة الذكي - تحليل المشروع", projectResponse.innerHTML);
-
-renderHistory();
+];
