@@ -1,119 +1,146 @@
-// 1. فتح وإغلاق القائمة الجانبية لعرض المحادثات القديمة
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('open');
-    if (sidebar.classList.contains('open')) {
-        renderHistory();
-    }
-}
+// script.js - كل المنطق الجديد
 
-// 2. عرض المحادثات المحفوظة
-function renderHistory() {
-    const list = document.getElementById('historyList');
-    list.innerHTML = '';
-    const history = JSON.parse(localStorage.getItem('savedChats')) || [];
+// ===== 1. البحث الفوري وعرض البطاقات =====
+const searchInput = document.getElementById('searchInput');
+const resultsContainer = document.getElementById('resultsContainer');
+const questionCard = document.getElementById('questionCard');
+const questionText = document.getElementById('questionText');
 
-    history.forEach((item) => {
-        const li = document.createElement('li');
-        li.innerText = item.prompt.substring(0, 30) + (item.prompt.length > 30 ? '...' : '');
-        li.onclick = () => {
-            alert(`السؤال: ${item.prompt}\n\nالإجابة:\n${item.response}`);
-            toggleSidebar();
-        };
-        list.appendChild(li);
+// عرض كل البيانات عند تحميل الصفحة
+window.onload = function() {
+  displayAllItems();
+  loadArchive();
+};
+
+searchInput.addEventListener('input', function(e) {
+  const query = e.target.value.trim().toLowerCase();
+  
+  if (query === '') {
+    // إذا كان الحقل فارغاً، اخفي مربع السؤال واعرض كل العناصر
+    questionCard.classList.remove('active');
+    displayAllItems();
+    return;
+  }
+
+  // اظهر مربع السؤال
+  questionCard.classList.add('active');
+
+  // ابحث في قاعدة البيانات
+  let foundItems = [];
+  dataBase.categories.forEach(cat => {
+    cat.items.forEach(item => {
+      if (item.toLowerCase().includes(query)) {
+        foundItems.push({ name: item, category: cat.name });
+      }
     });
+  });
+
+  if (foundItems.length > 0) {
+    displayResults(foundItems);
+  } else {
+    // إذا لم يجد، اعرض رسالة مع إبقاء مربع السؤال ظاهراً
+    resultsContainer.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; background:rgba(255,0,0,0.1); border-radius:15px;">❌ لا توجد نتائج لـ "${query}"، لكن يمكنك كتابة سؤالك في المربع أعلاه.</div>`;
+  }
+});
+
+function displayAllItems() {
+  let allItems = [];
+  dataBase.categories.forEach(cat => {
+    cat.items.forEach(item => {
+      allItems.push({ name: item, category: cat.name });
+    });
+  });
+  displayResults(allItems);
 }
 
-// 3. حفظ المحادثات في ذاكرة الهاتف
-function saveChatToMemory(prompt, response) {
-    let history = JSON.parse(localStorage.getItem('savedChats')) || [];
-    history.unshift({ prompt, response, time: new Date() });
-    localStorage.setItem('savedChats', JSON.stringify(history));
+function displayResults(items) {
+  resultsContainer.innerHTML = items.map(item => `
+    <div>
+      <div style="font-size:20px;">${item.name}</div>
+      <small style="color:#aaa; font-size:12px;">${item.category}</small>
+    </div>
+  `).join('');
 }
 
-// 4. إضافة أزرار النسخ والمشاركة تحت الإجابة
-function addActionButtons(container, text) {
-    const existingActions = container.querySelector('.action-buttons-wrapper');
-    if (existingActions) existingActions.remove();
+// ===== 2. حفظ الأسئلة (الأرشيف) =====
+function saveQuestion() {
+  const text = questionText.value.trim();
+  if (text === '') {
+    alert('يرجى كتابة السؤال أولاً!');
+    return;
+  }
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'action-buttons-wrapper';
-
-    // زر النسخ
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'btn-sub-action';
-    copyBtn.innerText = '📋 نسخ';
-    copyBtn.onclick = () => {
-        navigator.clipboard.writeText(text);
-        alert('تم نسخ النص!');
-    };
-
-    // زر المشاركة لجميع التطبيقات
-    const shareBtn = document.createElement('button');
-    shareBtn.className = 'btn-sub-action';
-    shareBtn.innerText = '📲 مشاركة';
-    shareBtn.onclick = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'مستشار البرمجة الذكي',
-                    text: text
-                });
-            } catch (err) {}
-        } else {
-            navigator.clipboard.writeText(text);
-            alert('تم نسخ النص لعدم دعم المشاركة المباشرة في هذا المتصفح.');
-        }
-    };
-
-    wrapper.appendChild(copyBtn);
-    wrapper.appendChild(shareBtn);
-    container.appendChild(wrapper);
+  let archive = JSON.parse(localStorage.getItem('questionArchive')) || [];
+  archive.push({ 
+    text: text, 
+    date: new Date().toLocaleString('ar-EG') 
+  });
+  localStorage.setItem('questionArchive', JSON.stringify(archive));
+  
+  questionText.value = ''; // افرغ الحقل
+  loadArchive(); // حدث القائمة
+  alert('✅ تم حفظ السؤال بنجاح!');
 }
 
-// 5. دالة تحليل المشروع (سريعة بدون انتظار طويل)
-async function analyzeProject() {
-    const input = document.getElementById('projectInput');
-    const resultBox = document.getElementById('projectResult');
-    const text = input.value.trim();
+function loadArchive() {
+  const archiveList = document.getElementById('archiveList');
+  let archive = JSON.parse(localStorage.getItem('questionArchive')) || [];
+  
+  if (archive.length === 0) {
+    archiveList.innerHTML = '<p style="color:#aaa;">لا توجد أسئلة محفوظة بعد.</p>';
+    return;
+  }
 
-    if (!text) return;
-
-    resultBox.style.display = 'block';
-    resultBox.innerText = 'جاري التحليل فوراً...';
-
-    try {
-        // يمكنك ربط هذه الجزئية بالـ API الخاص بك مباشرة
-        let responseText = "تم تحليل مشروعك بنجاح! نقترح استخدام HTML, CSS, JavaScript للواجهة و Python/Node.js للخلفية.";
-        
-        // إظهار الإجابة فوراً
-        resultBox.innerText = responseText;
-
-        // إضافة أزرار النسخ والمشاركة
-        addActionButtons(resultBox, responseText);
-
-        // حفظ الشات
-        saveChatToMemory(text, responseText);
-
-    } catch (error) {
-        resultBox.innerText = '❌ حدث خطأ أثناء التحليل.';
-    }
+  archiveList.innerHTML = archive.map((q, index) => `
+    <div class="archive-item">
+      <strong>📌 ${q.text}</strong> 
+      <span style="color:#888; font-size:12px; display:block;">${q.date}</span>
+      <button onclick="deleteArchive(${index})" style="background:red; color:#fff; border:none; border-radius:10px; padding:5px 10px; margin-top:5px; cursor:pointer;">حذف</button>
+    </div>
+  `).join('');
 }
 
-// 6. دالة البحث السريع
-async function handleSearch() {
-    const input = document.getElementById('searchInput');
-    const resultBox = document.getElementById('searchResult');
-    const text = input.value.trim();
+function deleteArchive(index) {
+  let archive = JSON.parse(localStorage.getItem('questionArchive')) || [];
+  archive.splice(index, 1);
+  localStorage.setItem('questionArchive', JSON.stringify(archive));
+  loadArchive();
+}
 
-    if (!text) return;
+function toggleArchive() {
+  const list = document.getElementById('archiveList');
+  list.classList.toggle('hidden');
+}
 
-    resultBox.style.display = 'block';
-    resultBox.innerText = 'جاري البحث...';
+// ===== 3. المشاركة ونسخ الرابط =====
+function shareContent() {
+  const text = questionText.value.trim() || 'مرحباً، هذا سؤالي عن البرمجة:';
+  if (navigator.share) {
+    navigator.share({
+      title: 'سؤال برمجي',
+      text: text,
+    }).catch(err => console.log('تم الإلغاء'));
+  } else {
+    // بديل للمتصفحات التي لا تدعم المشاركة
+    copyLink(text);
+  }
+}
 
-    let responseText = `نتائج البحث عن: ${text}`;
-    resultBox.innerText = responseText;
-
-    addActionButtons(resultBox, responseText);
-    saveChatToMemory(text, responseText);
+function copyLink() {
+  const text = questionText.value.trim() || 'رابط مشاركة سؤال برمجي';
+  // محاكاة رابط (أو استخدم الرابط الحقيقي للصفحة)
+  const dummyLink = window.location.href + '?q=' + encodeURIComponent(text);
+  
+  navigator.clipboard.writeText(dummyLink).then(() => {
+    alert('✅ تم نسخ الرابط بنجاح!');
+  }).catch(() => {
+    // طريقة بديلة للنسخ
+    const textarea = document.createElement('textarea');
+    textarea.value = dummyLink;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('✅ تم نسخ الرابط!');
+  });
 }
