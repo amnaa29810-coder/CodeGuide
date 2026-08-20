@@ -8,62 +8,57 @@
 </head>
 <body>
 
-    <!-- زر الوضع الليلي -->
     <button id="theme-toggle-btn">🌙 الوضع الليلي</button>
 
     <div class="container">
         <header>
-            <h1>💡 منصة البرمجة واستشارة المشاريع</h1>
-            <p>موسوعة التقنيات، أداة تحليل المشاريع، وحاسبة التكلفة والخرائط البرمجية</p>
+            <h1>💡 منصة البرمجة المباشرة</h1>
+            <p>موسوعة الأدوات والتحليل السريع للمشاريع والقواعد</p>
         </header>
 
-        <!-- قسم البحث والاستفسارات العام -->
+        <!-- قسم البحث السريع -->
         <section class="card">
-            <h3>🔍 البحث والاستفسار السريع</h3>
+            <h3>🔍 البحث السريع</h3>
             <div class="input-group">
-                <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم برمجي، تقنية، أو مشكلة...">
+                <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
                 <button id="search-btn">بحث</button>
             </div>
         </section>
 
-        <!-- قسم الموسوعات والأدوات -->
+        <!-- قسم الموسوعات -->
         <section class="card">
-            <h3>📚 الموسوعات والأدوات البرمجية</h3>
+            <h3>📚 الموسوعات البرمجية</h3>
             <div class="button-grid">
-                <button id="btn-languages">💻 موسوعة لغات البرمجة</button>
-                <button id="btn-tools">🛠️ أدوات وتقنيات التطوير</button>
-                <button id="btn-ide-apps">📱 تطبيقات ومحررات الأكواد</button>
+                <button id="btn-languages">💻 لغات البرمجة</button>
+                <button id="btn-tools">🛠️ الأدوات والتقنيات</button>
+                <button id="btn-ide-apps">📱 تطبيقات ومحررات الكود</button>
             </div>
         </section>
 
-        <!-- قسم أدوات المشاريع الذكية (الميزات الجديدة) -->
+        <!-- قسم أدوات المشاريع الفورية -->
         <section class="card">
-            <h3>🚀 أدوات تخطيط المشاريع وقواعد البيانات</h3>
-            <div class="button-grid">
-                <button id="btn-calculator">💰 حاسبة الميزانية والمدى الزمني</button>
-                <button id="btn-db-generator">🗄️ مولد هيكل قواعد البيانات (Schema)</button>
+            <h3>🚀 تحليل وتخطيط فكرة مشروع</h3>
+            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك هنا مباشرة..."></textarea>
+            
+            <div class="button-grid" style="margin-top: 10px;">
+                <button id="analyze-project-btn">💡 تحليل الفكرة والتقنيات</button>
+                <button id="btn-calculator">💰 الميزانية والوقت</button>
+                <button id="btn-db-generator">🗄️ هيكل قواعد البيانات</button>
             </div>
         </section>
 
-        <!-- قسم خرائط طريق المبرمج (الميزة الجديدة) -->
+        <!-- قسم خرائط الطريق السريعة -->
         <section class="card">
-            <h3>🗺️ خارطة طريق المبرمج (Roadmaps)</h3>
+            <h3>🗺️ خرائط طريق المبرمج (Roadmaps)</h3>
             <div class="button-grid">
-                <button id="btn-roadmap-web">🌐 تطوير الويب (Web)</button>
-                <button id="btn-roadmap-mobile">📱 تطوير التطبيقات (Mobile)</button>
-                <button id="btn-roadmap-ai">🤖 الذكاء الاصطناعي (AI)</button>
+                <button id="btn-roadmap-web">🌐 تطوير الويب</button>
+                <button id="btn-roadmap-mobile">📱 تطوير التطبيقات</button>
+                <button id="btn-roadmap-ai">🤖 الذكاء الاصطناعي</button>
             </div>
-        </section>
-
-        <!-- قسم تحليل فكرة المشروع -->
-        <section class="card">
-            <h3>💡 تحليل وتصميم فكرة مشروع</h3>
-            <textarea id="project-idea" rows="4" placeholder="اكتب فكرة مشروعك هنا بالتفصيل (مثال: تطبيق لتوصيل الطلبات بين المدن)..."></textarea>
-            <button id="analyze-project-btn" style="width: 100%; margin-top: 10px;">🚀 تحليل الفكرة واقتراح التقنيات</button>
         </section>
     </div>
 
-    <!-- النافذة المنبثقة (Modal) -->
+    <!-- النافذة المنبثقة -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <span id="close-modal" class="close-btn">&times;</span>
