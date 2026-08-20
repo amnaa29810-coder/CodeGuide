@@ -6,15 +6,15 @@ const GEMINI_API_KEY = partA + partB + partC;
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
+
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
+const btnCalculator = document.getElementById("btn-calculator");
+const btnDbGenerator = document.getElementById("btn-db-generator");
 
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
 
-// أزرار الميزات الجديدة
-const btnCalculator = document.getElementById("btn-calculator");
-const btnDbGenerator = document.getElementById("btn-db-generator");
 const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
 const btnRoadmapAi = document.getElementById("btn-roadmap-ai");
@@ -24,7 +24,7 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// تفعيل الوضع الليلي
+// الوضع الليلي
 const themeToggleBtn = document.getElementById("theme-toggle-btn");
 if (themeToggleBtn) {
     themeToggleBtn.onclick = () => {
@@ -60,11 +60,10 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// فتح السجل مع دعم الشات المباشر
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
-        showModal("📜 سجل المحادثات", "<p style='text-align:center; padding:20px;'>لا يوجد سجل محادثات حتى الآن.</p>");
+        showModal("📜 السجل", "<p style='text-align:center; padding:20px;'>لا يوجد سجل حتى الآن.</p>");
         return;
     }
 
@@ -111,7 +110,7 @@ function formatMarkdown(text) {
 
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
-        <input type="text" id="modal-internal-search" placeholder="🔍 ابحث بالاسم أو التفاصيل..." 
+        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
                style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px;">
         <div id="modal-items-container"></div>
     `;
@@ -130,7 +129,7 @@ function setupInternalSearch(dataArray, renderFunction) {
                 btn.onclick = (e) => {
                     const textToCopy = e.target.getAttribute("data-copy");
                     navigator.clipboard.writeText(textToCopy).then(() => {
-                        alert("تم نسخ معلومات هذا العنصر بنجاح!");
+                        alert("تم النسخ!");
                     });
                 };
             });
@@ -141,68 +140,57 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// ربط الموسوعات
+// عرض الموسوعات المباشرة
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
         return items.map(item => `
-            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
-                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                <div style="font-size:13px; color:#334155; line-height:1.5;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" 
-                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
-                    📋 نسخ معلومات ${item.name}
-                </button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
+                <h4 style="color:#1d4ed8; margin-bottom:4px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
             </div>
         `).join('');
     });
-    showModal("📚 موسوعة لغات البرمجة", searchSetup.searchBoxHtml);
+    showModal("📚 لغات البرمجة", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
 btnTools.onclick = () => {
     const searchSetup = setupInternalSearch(devTools, (items) => {
         return items.map(item => `
-            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
-                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                <div style="font-size:13px; color:#334155; line-height:1.5;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" 
-                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
-                    📋 نسخ معلومات ${item.name}
-                </button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
+                <h4 style="color:#1d4ed8; margin-bottom:4px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
             </div>
         `).join('');
     });
-    showModal("🛠️ الأدوات البرمجية والتقنيات", searchSetup.searchBoxHtml);
+    showModal("🛠️ الأدوات والتقنيات", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
 btnIdeApps.onclick = () => {
     const searchSetup = setupInternalSearch(executionApps, (items) => {
         return items.map(app => `
-            <div class="info-card" style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:8px; margin-bottom:10px;">
-                <h4 style="color:#1d4ed8; margin-bottom:4px;">${app.name}</h4>
-                <span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold;">${app.category}</span>
-                <div style="font-size:13px; color:#334155; margin-top:8px; line-height:1.5;">${formatMarkdown(app.desc)}</div>
-                <p style="font-size:12px; color:#2563eb; margin-top:4px;"><strong>الاستخدامات:</strong> ${app.uses}</p>
-                <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}\nالاستخدامات: ${app.uses}" 
-                        style="margin-top:10px; width:100%; padding:6px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; color:#1e293b;">
-                    📋 نسخ معلومات ${app.name}
-                </button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
+                <h4 style="color:#1d4ed8; margin-bottom:2px;">${app.name}</h4>
+                <div style="font-size:13px; color:#334155;">${formatMarkdown(app.desc)}</div>
+                <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
             </div>
         `).join('');
     });
-    showModal("📱 تطبيقات ومحررات الأكواد", searchSetup.searchBoxHtml);
+    showModal("📱 تطبيقات ومحررات الكود", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
-// تشغيل الخرائط البرمجية الثلاث
+// الخرائط البرمجية السريعة
 btnRoadmapWeb.onclick = () => {
-    showModal("🌐 خارطة طريق مطور الويب", "");
+    showModal("🌐 خارطة طريق الويب", "");
     renderResponseWithTools(roadmapsData.web, "خارطة طريق الويب");
 };
 
 btnRoadmapMobile.onclick = () => {
-    showModal("📱 خارطة طريق مطور التطبيقات", "");
+    showModal("📱 خارطة طريق التطبيقات", "");
     renderResponseWithTools(roadmapsData.mobile, "خارطة طريق التطبيقات");
 };
 
@@ -211,60 +199,13 @@ btnRoadmapAi.onclick = () => {
     renderResponseWithTools(roadmapsData.ai, "خارطة طريق الذكاء الاصطناعي");
 };
 
-// حاسبة الميزانية والمدة الزمنية
-btnCalculator.onclick = () => {
-    const html = `
-        <p style="font-size:13px; color:#64748b; margin-bottom:10px;">أدخل فكرة مشروعك لحساب التكلفة التقديرية بالدولار والمدة بالساعات/الأسابيع:</p>
-        <textarea id="calc-idea-input" rows="3" placeholder="مثال: تطبيق متجر إلكتروني مع لوحة تحكم ودفع إلكتروني..." style="margin-bottom:10px;"></textarea>
-        <button id="run-calc-btn" style="width:100%;">📊 احسب التكلفة والزمن</button>
-    `;
-    showModal("💰 حاسبة الميزانية والخط الزمنية", html);
-
-    document.getElementById("run-calc-btn").onclick = async () => {
-        const val = document.getElementById("calc-idea-input").value.trim();
-        if (!val) return;
-        showModal("💰 جاري الحساب...", "<p style='text-align:center; padding:20px;'>جاري تحليل المتطلبات وتقدير الميزانية...</p>");
-        try {
-            const prompt = `قدم تقدير مالي وزمني مفصل لفكرة المشروع التالية:\n"${val}"\n\nاحسب:\n1. التكلفة التقديرية بالدولار ($).\n2. المدة الزمنية المتوقعة للتنفيذ.\n3. التقنيات والفرق البرمجية المطلوبة.`;
-            const result = await callGemini(prompt);
-            saveChatToHistory(`حاسبة الميزانية: ${val}`, result);
-            renderResponseWithTools(result, val);
-        } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
-        }
-    };
-};
-
-// مولد هيكل قواعد البيانات (Schema)
-btnDbGenerator.onclick = () => {
-    const html = `
-        <p style="font-size:13px; color:#64748b; margin-bottom:10px;">أدخل فكرة التطبيق لتوليد جداول قواعد البيانات وعلاقاتها بالكامل:</p>
-        <textarea id="db-idea-input" rows="3" placeholder="مثال: نظام إدارة مستشفى يربط الأطباء والمرضى والمواعيد..." style="margin-bottom:10px;"></textarea>
-        <button id="run-db-btn" style="width:100%;">🗄️ إنتاج هيكل قواعد البيانات</button>
-    `;
-    showModal("🗄️ مولد هيكل قواعد البيانات (Schema)", html);
-
-    document.getElementById("run-db-btn").onclick = async () => {
-        const val = document.getElementById("db-idea-input").value.trim();
-        if (!val) return;
-        showModal("🗄️ جاري إنشاء الجداول...", "<p style='text-align:center; padding:20px;'>جاري تصميم مخطط قواعد البيانات...</p>");
-        try {
-            const prompt = `قم بتصميم مخطط قواعد بيانات (Database Schema) كامل لفكرة التطبيق التالية:\n"${val}"\n\nقم بتحديد الجداول (Tables)، الحقول لكل جدول (Fields)، وأنواع البيانات (Data Types)، والعلاقات بين الجداول (One-to-Many, Many-to-Many) بوضوح.`;
-            const result = await callGemini(prompt);
-            saveChatToHistory(`توليد Schema: ${val}`, result);
-            renderResponseWithTools(result, val);
-        } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
-        }
-    };
-};
-
 function saveChatToHistory(question, answer) {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     history.push({ question, answer, date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) });
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
+// الاتصال السريع المباشر بالذكاء الاصطناعي
 async function callGemini(promptText) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
@@ -277,53 +218,45 @@ async function callGemini(promptText) {
     });
 
     if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || "تعذر الاتصال بالخدمة.");
+        throw new Error("تعذر الاتصال بالخدمة.");
     }
 
     const data = await response.json();
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض الاستجابة مع إبقاء زر النسخ وتفاعل الشات وإلغاء زر الـ PDF
 function renderResponseWithTools(rawText, originalContext = "") {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
     
     container.innerHTML = `
-        <div style="padding:10px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b;">${formattedHtml}</div>
+        <div style="padding:5px;">
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.5; max-height:280px; overflow-y:auto; color:#1e293b;">${formattedHtml}</div>
         </div>
 
-        <!-- صندوق الشات والسؤال المستمر -->
-        <div style="margin-top:12px; padding:10px; background:#f1f5f9; border-radius:8px; border:1px solid #cbd5e1;">
-            <label style="font-size:12px; font-weight:bold; color:#334155; display:block; margin-bottom:5px;">💬 واصل الاستفسار أو اسأل شات حول الفكرة:</label>
+        <div style="margin-top:10px; padding:8px; background:#f1f5f9; border-radius:8px;">
             <div style="display:flex; gap:6px;">
-                <input type="text" id="followup-input" placeholder="اكتب سؤالك هنا..." style="flex:1; padding:8px 10px; border:1px solid #94a3b8; border-radius:6px; font-size:13px; outline:none;">
-                <button id="send-followup-btn" style="padding:8px 14px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px;">إرسال</button>
+                <input type="text" id="followup-input" placeholder="اسأل متابعة سريعة..." style="flex:1; padding:6px 10px; font-size:13px;">
+                <button id="send-followup-btn" style="padding:6px 12px; font-size:13px;">إرسال</button>
             </div>
         </div>
 
-        <!-- أزرار التحكم (نسخ الإجابة فقط) -->
-        <div style="display:flex; gap:8px; margin-top:10px;">
-            <button id="copy-response-btn" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px;">📋 نسخ الإجابة</button>
-        </div>
+        <button id="copy-response-btn" style="width:100%; margin-top:8px; padding:8px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ الإجابة</button>
     `;
 
     modalBody.innerHTML = "";
     modalBody.appendChild(container);
 
-    // تفعيل الشات المباشر
     document.getElementById("send-followup-btn").onclick = async () => {
         const input = document.getElementById("followup-input");
         const query = input.value.trim();
         if (!query) return;
 
         const currentText = document.getElementById("response-text-content").innerText;
-        showModal("💡 جاري معالجة استفسارك...", "<p style='text-align:center; padding:20px;'>جاري إعداد التوضيح والإجابة...</p>");
+        showModal("⚡ جاري الرد...", "<p style='text-align:center; padding:15px;'>لحظات...</p>");
 
         try {
-            const prompt = `السياق والتحليل السابق هو:\n"${currentText}"\n\nسؤال المتابعة من المستخدم:\n"${query}"\n\nأجب بأسلوب واضح ومباشر باللغة العربية.`;
+            const prompt = `السياق: "${currentText}"\nالسؤال: "${query}"\nأجب بسرعة وفي نقاط موجزة جداً باللغة العربية.`;
             const result = await callGemini(prompt);
             
             const updatedAnswer = `${currentText}\n\n---\n📌 **سؤال:** ${query}\n💡 **الجواب:**\n${result}`;
@@ -334,24 +267,22 @@ function renderResponseWithTools(rawText, originalContext = "") {
         }
     };
 
-    // نسخ الإجابة
     document.getElementById("copy-response-btn").onclick = () => {
         const textToCopy = document.getElementById("response-text-content").innerText;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            alert("تم نسخ النص بنجاح!");
-        });
+        navigator.clipboard.writeText(textToCopy).then(() => alert("تم النسخ!"));
     };
 }
 
+// 1. البحث السريع المباشر
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
     searchInput.value = "";
-    showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:20px;'>جاري جلب الإجابة...</p>");
+    showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:15px;'>⚡ جاري الإجابة السريعة...</p>");
 
     try {
-        const prompt = `أجب بإيجاز واحترافية باللغة العربية على:\n"${query}"`;
+        const prompt = `أجب بإيجاز وسرعة شديدة وفي نقاط مباشرة باللغة العربية على:\n"${query}"`;
         const result = await callGemini(prompt);
         saveChatToHistory(query, result);
         renderResponseWithTools(result, query);
@@ -360,17 +291,60 @@ searchBtn.onclick = async () => {
     }
 };
 
+// 2. تحليل الفكرة المباشر
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
-    if (!idea) return;
+    if (!idea) {
+        alert("يرجى كتابة الفكرة أولاً في صندوق النص أعلاه!");
+        return;
+    }
 
-    projectIdea.value = "";
-    showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>جاري تحليل الفكرة...</p>");
+    showModal("💡 تحليل الفكرة", "<p style='text-align:center; padding:15px;'>⚡ جاري التحليل السريع...</p>");
 
     try {
-        const prompt = `حلل فكرة المشروع التالية واقترح التقنيات والخطوات بشكل مباشر ومختصر:\n"${idea}"`;
+        const prompt = `حلل فكرة المشروع التالية واقترح التقنيات والخطوات بشكل مختصر وسريع جداً:\n"${idea}"`;
         const result = await callGemini(prompt);
         saveChatToHistory(idea, result);
+        renderResponseWithTools(result, idea);
+    } catch (err) {
+        modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
+    }
+};
+
+// 3. حساب الميزانية المباشر بضغطة واحدة
+btnCalculator.onclick = async () => {
+    const idea = projectIdea.value.trim();
+    if (!idea) {
+        alert("يرجى كتابة فكرة المشروع في صندوق النص أعلاه أولاً للحساب مباشرة!");
+        return;
+    }
+
+    showModal("💰 التكلفة والوقت", "<p style='text-align:center; padding:15px;'>⚡ جاري الحساب السريع...</p>");
+
+    try {
+        const prompt = `قدم تقدير مالي وزمني مختصر جداً بالدولار والأسابيع للفكرة التالية:\n"${idea}"`;
+        const result = await callGemini(prompt);
+        saveChatToHistory(`ميزانية: ${idea}`, result);
+        renderResponseWithTools(result, idea);
+    } catch (err) {
+        modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
+    }
+};
+
+// 4. توليد قواعد البيانات المباشر بضغطة واحدة
+btnDbGenerator.onclick = async () => {
+    const idea = projectIdea.value.trim();
+    if (!idea) {
+        alert("يرجى كتابة فكرة المشروع في صندوق النص أعلاه أولاً لتوليد القواعد مباشرة!");
+        return;
+    }
+
+    showModal("🗄️ قواعد البيانات", "<p style='text-align:center; padding:15px;'>⚡ جاري توليد الجداول والعلاقات...</p>");
+
+    try {
+        const prompt = `أعطني جداول وعلاقات قواعد البيانات (Schema) بشكل موجز ومباشر للفكرة التالية:\n"${idea}"`;
+        const result = await callGemini(prompt);
+        saveChatToHistory(`Schema: ${idea}`, result);
         renderResponseWithTools(result, idea);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
