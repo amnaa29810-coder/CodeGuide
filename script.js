@@ -17,6 +17,16 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
+// تفعيل الوضع الليلي
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
+if (themeToggleBtn) {
+    themeToggleBtn.onclick = () => {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
+        themeToggleBtn.innerText = isDark ? "☀️ الوضع الفاتح" : "🌙 الوضع الليلي";
+    };
+}
+
 // إنشاء زر السجل الجانبي
 function createHistorySidebar() {
     if (document.getElementById("chat-history-trigger")) return;
@@ -43,7 +53,7 @@ function createHistorySidebar() {
     btn.onclick = openHistoryModal;
 }
 
-// السجل - عرض اسم الموضوع فقط
+// فتح السجل مع دعم الشات المباشر عند اختيار أي عنصر
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
@@ -69,7 +79,7 @@ function openHistoryModal() {
             const idx = el.getAttribute("data-index");
             const selected = history[idx];
             showModal(`💡 ${selected.question}`, "");
-            renderResponseWithTools(selected.answer);
+            renderResponseWithTools(selected.answer, selected.question);
         };
     });
 }
@@ -85,7 +95,6 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
-// تنسيق نصوص الماركداون
 function formatMarkdown(text) {
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -93,7 +102,6 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة تصفية البحث مع زر نسخ لكل عنصر
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 ابحث بالاسم أو التفاصيل..." 
@@ -111,7 +119,6 @@ function setupInternalSearch(dataArray, renderFunction) {
             );
             container.innerHTML = renderFunction(filtered);
 
-            // تفعيل أزرار النسخ المنفردة لكل عنصر
             document.querySelectorAll(".copy-item-btn").forEach(btn => {
                 btn.onclick = (e) => {
                     const textToCopy = e.target.getAttribute("data-copy");
@@ -127,7 +134,6 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// 1. زر موسوعة اللغات
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
         return items.map(item => `
@@ -145,7 +151,6 @@ btnLanguages.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// 2. زر الأدوات البرمجية
 btnTools.onclick = () => {
     const searchSetup = setupInternalSearch(devTools, (items) => {
         return items.map(item => `
@@ -163,7 +168,6 @@ btnTools.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// 3. زر تطبيقات وبيئات الأكواد
 btnIdeApps.onclick = () => {
     const searchSetup = setupInternalSearch(executionApps, (items) => {
         return items.map(app => `
@@ -183,14 +187,12 @@ btnIdeApps.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// حفظ المحادثة
 function saveChatToHistory(question, answer) {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     history.push({ question, answer, date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) });
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// طلب الذكاء الاصطناعي
 async function callGemini(promptText) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
@@ -211,62 +213,107 @@ async function callGemini(promptText) {
     return data.candidates[0].content.parts[0].text;
 }
 
-// عرض نتائج البحث مع زر النسخ العام
-function renderResponseWithTools(rawText) {
+// عرض الاستجابة مع إمكانية توجيه أسرع للشات وتصدير PDF والنسخ
+function renderResponseWithTools(rawText, originalContext = "") {
     const formattedHtml = formatMarkdown(rawText);
     const container = document.createElement("div");
     
     container.innerHTML = `
-        <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">${formattedHtml}</div>
-        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #e5e7eb;">
-            <button id="copy-response-btn" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📋 نسخ الإجابة كاملة</button>
+        <div id="pdf-export-area" style="padding:10px;">
+            <div id="response-text-content" style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b;">${formattedHtml}</div>
+        </div>
+
+        <!-- صندوق الشات والسؤال المستمر -->
+        <div style="margin-top:12px; padding:10px; background:#f1f5f9; border-radius:8px; border:1px solid #cbd5e1;">
+            <label style="font-size:12px; font-weight:bold; color:#334155; display:block; margin-bottom:5px;">💬 واصل الاستفسار أو اسأل شات حول الفكرة:</label>
+            <div style="display:flex; gap:6px;">
+                <input type="text" id="followup-input" placeholder="اكتب سؤالك هنا..." style="flex:1; padding:8px 10px; border:1px solid #94a3b8; border-radius:6px; font-size:13px; outline:none;">
+                <button id="send-followup-btn" style="padding:8px 14px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:13px;">إرسال</button>
+            </div>
+        </div>
+
+        <!-- أزرار خيارات التحكم (PDF والنسخ) -->
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <button id="export-pdf-btn" style="flex:1; padding:10px; background:#059669; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px;">📄 تصدير PDF</button>
+            <button id="copy-response-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px;">📋 نسخ الإجابة</button>
         </div>
     `;
 
     modalBody.innerHTML = "";
     modalBody.appendChild(container);
 
+    // تفعيل إرسال الاستفسار التفاعلي المباشر (الشات)
+    document.getElementById("send-followup-btn").onclick = async () => {
+        const input = document.getElementById("followup-input");
+        const query = input.value.trim();
+        if (!query) return;
+
+        const currentText = document.getElementById("response-text-content").innerText;
+        showModal("💡 جاري معالجة استفسارك...", "<p style='text-align:center; padding:20px;'>جاري إعداد التوضيح والإجابة...</p>");
+
+        try {
+            const prompt = `السياق والتحليل السابق هو:\n"${currentText}"\n\nسؤال المتابعة من المستخدم:\n"${query}"\n\nأجب بأسلوب واضح ومباشر باللغة العربية.`;
+            const result = await callGemini(prompt);
+            
+            const updatedAnswer = `${currentText}\n\n---\n📌 **سؤال:** ${query}\n💡 **الجواب:**\n${result}`;
+            saveChatToHistory(`متابعة: ${query}`, updatedAnswer);
+            renderResponseWithTools(updatedAnswer, originalContext);
+        } catch (err) {
+            modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
+        }
+    };
+
+    // تصدير PDF
+    document.getElementById("export-pdf-btn").onclick = () => {
+        const element = document.getElementById("pdf-export-area");
+        const opt = {
+            margin:       10,
+            filename:     'تحليل_المشروع.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    };
+
+    // نسخ الإجابة
     document.getElementById("copy-response-btn").onclick = () => {
-        navigator.clipboard.writeText(rawText).then(() => {
+        const textToCopy = document.getElementById("response-text-content").innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
             alert("تم نسخ النص بنجاح!");
         });
     };
 }
 
-// البحث والاستشارة
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
     searchInput.value = "";
-
     showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:20px;'>جاري جلب الإجابة...</p>");
 
     try {
         const prompt = `أجب بإيجاز واحترافية باللغة العربية على:\n"${query}"`;
         const result = await callGemini(prompt);
         saveChatToHistory(query, result);
-        renderResponseWithTools(result);
+        renderResponseWithTools(result, query);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
 };
 
-// تحليل فكرة المشروع
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) return;
 
     projectIdea.value = "";
-
     showModal("💡 تحليل المشروع وخطة العمل", "<p style='text-align:center; padding:20px;'>جاري تحليل الفكرة...</p>");
 
     try {
         const prompt = `حلل فكرة المشروع التالية واقترح التقنيات والخطوات بشكل مباشر ومختصر:\n"${idea}"`;
-        
         const result = await callGemini(prompt);
         saveChatToHistory(idea, result);
-        renderResponseWithTools(result);
+        renderResponseWithTools(result, idea);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
