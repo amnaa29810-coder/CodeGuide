@@ -137,3 +137,24 @@ const executionApps = [
         uses: "مشروعات الباثون وتحليل البيانات."
     }
 ];
+
+// بيانات الخرائط البرمجية الثابتة للمشاهدة السريعة
+const roadmapsData = {
+    web: "🚀 **خارطة طريق مطور الويب (Web Developer):**\n\n" +
+         "1️⃣ **المبتدئ (Basic):** HTML5 + CSS3 + الأساسيات الحركية بـ JavaScript.\n" +
+         "2️⃣ **واجهات المستخدم (Frontend):** إتقان React.js أو Vue.js + TailwindCSS + التعامل مع APIs.\n" +
+         "3️⃣ **الخلفية والقواعد (Backend):** Node.js/Express أو Python/Django + قواعد البيانات PostgreSQL/MongoDB.\n" +
+         "4️⃣ **المتقدم (DevOps):** Git/GitHub + Docker + رفع الموقع على AWS أو Vercel.",
+    
+    mobile: "🚀 **خارطة طريق مطور التطبيقات (Mobile Developer):**\n\n" +
+            "1️⃣ **الأساسيات:** أساسيات البرمجة والهياكل البرمجية.\n" +
+            "2️⃣ **التطوير العابر للمنصات (Cross-Platform):** تعلم Flutter (لغة Dart) أو React Native.\n" +
+            "3️⃣ **الربط مع الخدمات:** Firebase + REST APIs + SQLite للتخزين المحلي.\n" +
+            "4️⃣ **المتقدم:** نشر التطبيقات على Google Play و App Store + إدارة الحالة (State Management).",
+
+    ai: "🚀 **خارطة طريق مهندس الذكاء الاصطناعي (AI & Data):**\n\n" +
+        "1️⃣ **الأساسيات:** لغة Python + الرياضيات (الجبر الخطي والاحتمالات).\n" +
+        "2️⃣ **معالجة البيانات:** NumPy + Pandas + Matplotlib.\n" +
+        "3️⃣ **تعلم الآلة (Machine Learning):** Scikit-Learn + فهم خوارزميات التصنيف والإنحدار.\n" +
+        "4️⃣ **التعلم العميق (Deep Learning):** PyTorch أو TensorFlow + التعامل مع النماذج اللغوية (LLMs)."
+};
