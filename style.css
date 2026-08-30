@@ -6,133 +6,132 @@
 }
 
 body {
-    background-color: #f8f9fa;
-    color: #333333;
-    line-height: 1.6;
-    padding-bottom: 40px;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 20px;
 }
 
 .container {
-    width: 90%;
-    max-width: 1000px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
-/* الهيدر والعنوان */
-.main-header {
-    background: #ffffff;
-    padding: 20px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
+header {
     text-align: center;
+    margin-bottom: 25px;
+    position: relative;
 }
 
-.app-title {
-    color: #2c3e50;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
+header h1 {
+    font-size: 24px;
+    color: #1d4ed8;
+    margin-bottom: 5px;
 }
 
-/* شريط البحث */
-.search-box input {
-    width: 100%;
-    max-width: 400px;
-    padding: 10px 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px;
-    outline: none;
-    font-size: 0.95rem;
-    transition: border 0.3s ease;
-}
-
-.search-box input:focus {
-    border-color: #3498db;
-}
-
-/* التصنيفات */
-.categories {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.category-btn {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    padding: 8px 16px;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.category-btn.active, .category-btn:hover {
-    background: #3498db;
-    color: #ffffff;
-    border-color: #3498db;
-}
-
-/* شبكة البطاقات */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+header p {
+    font-size: 14px;
+    color: #64748b;
 }
 
 .card {
     background: #ffffff;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-    border: 1px solid #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
 }
 
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+.card h3 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #1e293b;
 }
 
-.card-title {
-    font-size: 1.2rem;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.card-desc {
-    color: #666666;
-    font-size: 0.95rem;
-    margin-bottom: 15px;
-}
-
-/* أزرار التفاعل داخل البطاقة */
-.card-actions {
+.input-group {
     display: flex;
     gap: 10px;
 }
 
-.action-btn {
-    flex: 1;
-    padding: 8px;
+input[type="text"], textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+}
+
+input[type="text"]:focus, textarea:focus {
+    border-color: #2563eb;
+}
+
+button {
+    background-color: #2563eb;
+    color: white;
     border: none;
-    border-radius: 6px;
-    background: #f1f3f5;
-    color: #495057;
+    padding: 10px 18px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.2s;
 }
 
-.action-btn:hover {
-    background: #e9ecef;
+button:hover {
+    background-color: #1d4ed8;
 }
 
-.action-btn.fav-btn.active {
-    background: #ffe3e3;
-    color: #e03131;
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.button-grid button {
+    background-color: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+
+.button-grid button:hover {
+    background-color: #e2e8f0;
+}
+
+/* النافذة المنبثقة Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    left: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #64748b;
 }
