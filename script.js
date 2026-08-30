@@ -15,7 +15,7 @@ const btnCodeTranslator = document.getElementById("btn-code-translator");
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
-const btnGlossary = document.getElementById("btn-glossary");
+const btnGlossarySidebar = document.getElementById("btn-glossary-sidebar");
 
 const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
@@ -37,12 +37,12 @@ function createHistorySidebar() {
         position: fixed;
         bottom: 20px;
         left: 20px;
-        background: #1e293b;
+        background: linear-gradient(145deg, #1e293b, #0f172a);
         color: #fff;
         border: none;
-        padding: 10px 16px;
+        padding: 10px 18px;
         border-radius: 25px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         cursor: pointer;
         z-index: 999;
         font-weight: bold;
@@ -102,8 +102,8 @@ function formatMarkdown(text) {
 
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
-        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
-               style="width:100%; padding:8px 12px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px;">
+        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع في هذه الموسوعة..." 
+               style="width:100%; padding:10px 12px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px;">
         <div id="modal-items-container"></div>
     `;
     return { searchBoxHtml, bindEvent: () => {
@@ -136,38 +136,38 @@ function setupInternalSearch(dataArray, renderFunction) {
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
         return items.map(item => `
-            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
-                <h4 style="color:#1d4ed8; margin-bottom:4px;">${item.name}</h4>
-                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px;">📋 نسخ المعلومات</button>
             </div>
         `).join('');
     });
-    showModal("📚 لغات البرمجة", searchSetup.searchBoxHtml);
+    showModal("📚 موسوعة لغات البرمجة الشاملة", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
 btnTools.onclick = () => {
     const searchSetup = setupInternalSearch(devTools, (items) => {
         return items.map(item => `
-            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
-                <h4 style="color:#1d4ed8; margin-bottom:4px;">${item.name}</h4>
-                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
+                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px;">📋 نسخ</button>
             </div>
         `).join('');
     });
-    showModal("🛠️ الأدوات والتقنيات", searchSetup.searchBoxHtml);
+    showModal("🛠️ موسوعة الأدوات والتقنيات", searchSetup.searchBoxHtml);
     searchSetup.bindEvent();
 };
 
 btnIdeApps.onclick = () => {
     const searchSetup = setupInternalSearch(executionApps, (items) => {
         return items.map(app => `
-            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
-                <h4 style="color:#1d4ed8; margin-bottom:2px;">${app.name}</h4>
-                <div style="font-size:13px; color:#334155;">${formatMarkdown(app.desc)}</div>
-                <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
+                <h4 style="color:#1d4ed8; margin-bottom:4px;">${app.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(app.desc)}</div>
+                <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px;">📋 نسخ</button>
             </div>
         `).join('');
     });
@@ -175,13 +175,14 @@ btnIdeApps.onclick = () => {
     searchSetup.bindEvent();
 };
 
-btnGlossary.onclick = () => {
+// الزر الجانبي العائم للقاموس
+btnGlossarySidebar.onclick = () => {
     const searchSetup = setupInternalSearch(techGlossary, (items) => {
         return items.map(item => `
-            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
-                <h4 style="color:#1d4ed8; margin-bottom:4px;">📌 ${item.name}</h4>
-                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}: ${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
+                <h4 style="color:#059669; margin-bottom:6px;">📌 ${item.name}</h4>
+                <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}: ${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:linear-gradient(145deg, #10b981, #059669);">📋 نسخ المصطلح</button>
             </div>
         `).join('');
     });
@@ -278,12 +279,14 @@ function renderResponseWithTools(rawText, originalContext = "") {
     };
 }
 
-// التفاعل المباشر
+// البحث السريع مع تفريغ الصندوق تلقائياً
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
+    // مسح البحث فوراً عند الضغط
     searchInput.value = "";
+
     showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:15px;'>⚡ جاري الإجابة السريعة...</p>");
 
     try {
@@ -353,7 +356,6 @@ btnDbGenerator.onclick = async () => {
     }
 };
 
-// مترجم لغات البرمجة
 btnCodeTranslator.onclick = async () => {
     const codeText = projectIdea.value.trim();
     if (!codeText) {
