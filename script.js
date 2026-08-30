@@ -102,7 +102,7 @@ function formatMarkdown(text) {
 
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
-        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع في هذه الموسوعة..." 
+        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
                style="width:100%; padding:10px 12px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px;">
         <div id="modal-items-container"></div>
     `;
@@ -132,19 +132,51 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// الموسوعات البرمجية والقاموس
+// 💻 لعرض أقسام ولغات البرمجة بشكل مجالات مفصلة
 btnLanguages.onclick = () => {
-    const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
-        return items.map(item => `
-            <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px;">📋 نسخ المعلومات</button>
-            </div>
-        `).join('');
+    let categoriesHtml = `
+        <p style="font-size:14px; color:#64748b; margin-bottom:15px; text-align:center;">اختر المجال المُراد لعرض كافة اللغات والشرح التفصيلي الخاص بها:</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+    `;
+
+    programmingCategories.forEach(cat => {
+        categoriesHtml += `
+            <button class="cat-select-btn" data-id="${cat.id}" style="text-align:right; width:100%; justify-content:start; background: linear-gradient(145deg, #ffffff, #f1f5f9); color: #1e293b; border: 1px solid #cbd5e1; padding: 14px; border-radius:12px;">
+                <div style="font-size:16px; font-weight:bold; color:#1d4ed8;">${cat.title}</div>
+                <div style="font-size:12px; color:#64748b; font-weight:normal; margin-top:4px;">${cat.desc}</div>
+            </button>
+        `;
     });
-    showModal("📚 موسوعة لغات البرمجة الشاملة", searchSetup.searchBoxHtml);
-    searchSetup.bindEvent();
+    categoriesHtml += `</div>`;
+
+    showModal("💻 موسوعة أقسام لغات البرمجة", categoriesHtml);
+
+    document.querySelectorAll(".cat-select-btn").forEach(btn => {
+        btn.onclick = () => {
+            const catId = btn.getAttribute("data-id");
+            const selectedCat = programmingCategories.find(c => c.id === catId);
+            
+            const searchSetup = setupInternalSearch(selectedCat.languages, (items) => {
+                return items.map(item => `
+                    <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
+                        <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
+                        <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
+                        <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px;">📋 نسخ معلومات اللغة</button>
+                    </div>
+                `).join('');
+            });
+
+            const fullViewHtml = `
+                <button id="back-to-cats" style="margin-bottom:12px; padding:6px 12px; font-size:12px; background:#64748b;">⬅ العودة للأقسام</button>
+                ${searchSetup.searchBoxHtml}
+            `;
+            
+            showModal(selectedCat.title, fullViewHtml);
+            searchSetup.bindEvent();
+
+            document.getElementById("back-to-cats").onclick = () => btnLanguages.click();
+        };
+    });
 };
 
 btnTools.onclick = () => {
@@ -279,12 +311,11 @@ function renderResponseWithTools(rawText, originalContext = "") {
     };
 }
 
-// البحث السريع مع تفريغ الصندوق تلقائياً
+// البحث السريع مع مسح الصندوق فوراً
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    // مسح البحث فوراً عند الضغط
     searchInput.value = "";
 
     showModal("🔍 نتيجة البحث", "<p style='text-align:center; padding:15px;'>⚡ جاري الإجابة السريعة...</p>");
