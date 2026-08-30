@@ -10,10 +10,12 @@ const projectIdea = document.getElementById("project-idea");
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
 const btnCalculator = document.getElementById("btn-calculator");
 const btnDbGenerator = document.getElementById("btn-db-generator");
+const btnCodeTranslator = document.getElementById("btn-code-translator");
 
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
+const btnGlossary = document.getElementById("btn-glossary");
 
 const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
@@ -23,16 +25,6 @@ const modal = document.getElementById("modal");
 const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
-
-// الوضع الليلي
-const themeToggleBtn = document.getElementById("theme-toggle-btn");
-if (themeToggleBtn) {
-    themeToggleBtn.onclick = () => {
-        document.body.classList.toggle("dark-mode");
-        const isDark = document.body.classList.contains("dark-mode");
-        themeToggleBtn.innerText = isDark ? "☀️ الوضع الفاتح" : "🌙 الوضع الليلي";
-    };
-}
 
 // إنشاء زر السجل الجانبي
 function createHistorySidebar() {
@@ -140,7 +132,7 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// عرض الموسوعات المباشرة
+// الموسوعات البرمجية والقاموس
 btnLanguages.onclick = () => {
     const searchSetup = setupInternalSearch(programmingLanguages, (items) => {
         return items.map(item => `
@@ -183,7 +175,21 @@ btnIdeApps.onclick = () => {
     searchSetup.bindEvent();
 };
 
-// الخرائط البرمجية السريعة
+btnGlossary.onclick = () => {
+    const searchSetup = setupInternalSearch(techGlossary, (items) => {
+        return items.map(item => `
+            <div style="background:#fff; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px;">
+                <h4 style="color:#1d4ed8; margin-bottom:4px;">📌 ${item.name}</h4>
+                <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
+                <button class="copy-item-btn" data-copy="${item.name}: ${item.desc}" style="margin-top:6px; width:100%; padding:4px; font-size:12px;">📋 نسخ</button>
+            </div>
+        `).join('');
+    });
+    showModal("📖 قاموس مصطلحات المطورين", searchSetup.searchBoxHtml);
+    searchSetup.bindEvent();
+};
+
+// الخرائط البرمجية
 btnRoadmapWeb.onclick = () => {
     showModal("🌐 خارطة طريق الويب", "");
     renderResponseWithTools(roadmapsData.web, "خارطة طريق الويب");
@@ -205,7 +211,6 @@ function saveChatToHistory(question, answer) {
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-// الاتصال السريع المباشر بالذكاء الاصطناعي
 async function callGemini(promptText) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
@@ -273,7 +278,7 @@ function renderResponseWithTools(rawText, originalContext = "") {
     };
 }
 
-// 1. البحث السريع المباشر
+// التفاعل المباشر
 searchBtn.onclick = async () => {
     const query = searchInput.value.trim();
     if (!query) return;
@@ -291,7 +296,6 @@ searchBtn.onclick = async () => {
     }
 };
 
-// 2. تحليل الفكرة المباشر
 analyzeProjectBtn.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) {
@@ -311,7 +315,6 @@ analyzeProjectBtn.onclick = async () => {
     }
 };
 
-// 3. حساب الميزانية المباشر بضغطة واحدة
 btnCalculator.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) {
@@ -331,7 +334,6 @@ btnCalculator.onclick = async () => {
     }
 };
 
-// 4. توليد قواعد البيانات المباشر بضغطة واحدة
 btnDbGenerator.onclick = async () => {
     const idea = projectIdea.value.trim();
     if (!idea) {
@@ -346,6 +348,26 @@ btnDbGenerator.onclick = async () => {
         const result = await callGemini(prompt);
         saveChatToHistory(`Schema: ${idea}`, result);
         renderResponseWithTools(result, idea);
+    } catch (err) {
+        modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
+    }
+};
+
+// مترجم لغات البرمجة
+btnCodeTranslator.onclick = async () => {
+    const codeText = projectIdea.value.trim();
+    if (!codeText) {
+        alert("يرجى كتابة الكود أو تحديد اللغات المراد الترجمة إليها في صندوق النص أعلاه (مثال: حول هذا الكود من Python إلى JavaScript...)");
+        return;
+    }
+
+    showModal("🔄 ترجمة الكود البرمجي", "<p style='text-align:center; padding:15px;'>⚡ جاري ترجمة الكود وإعادة صياغته...</p>");
+
+    try {
+        const prompt = `أنت مترجم أكواد برمجة محترف. قُم ببرمجة أو ترجمة الكود التالي للغة المطلوبة بشكل نظيف ومباشر مع شرح مختصر جداً:\n"${codeText}"`;
+        const result = await callGemini(prompt);
+        saveChatToHistory(`ترجمة كود: ${codeText.substring(0, 30)}...`, result);
+        renderResponseWithTools(result, codeText);
     } catch (err) {
         modalBody.innerHTML = `<p style="color:#ef4444; font-weight:700;">❌ ${err.message}</p>`;
     }
