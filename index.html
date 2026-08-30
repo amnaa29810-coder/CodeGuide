@@ -3,33 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيقي</title>
+    <title>منصة البرمجة واستشارة المشاريع</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="container">
-            <h1 class="app-title">عنوان التطبيق</h1>
-            
-            <!-- شريط البحث لسرعة الوصول -->
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ابحث هنا...">
+    <div class="container">
+        <header>
+            <h1>💡 منصة البرمجة المباشرة</h1>
+            <p>موسوعة الأدوات والتحليل السريع للمشاريع والقواعد</p>
+        </header>
+
+        <!-- قسم البحث السريع -->
+        <section class="card">
+            <h3>🔍 البحث السريع</h3>
+            <div class="input-group">
+                <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
+                <button id="search-btn">بحث</button>
             </div>
-        </div>
-    </header>
+        </section>
 
-    <main class="container">
-        <!-- قسم التصفية والتصنيفات -->
-        <div class="categories" id="categoriesContainer">
-            <button class="category-btn active" data-category="all">الكل</button>
-        </div>
+        <!-- قسم الموسوعات -->
+        <section class="card">
+            <h3>📚 الموسوعات البرمجية والقاموس</h3>
+            <div class="button-grid">
+                <button id="btn-languages">💻 لغات البرمجة</button>
+                <button id="btn-tools">🛠️ الأدوات والتقنيات</button>
+                <button id="btn-ide-apps">📱 تطبيقات ومحررات الكود</button>
+                <button id="btn-glossary">📖 قاموس المصطلحات</button>
+            </div>
+        </section>
 
-        <!-- محتوى البطاقات -->
-        <div class="cards-grid" id="cardsContainer">
-            <!-- يتم عرض البيانات هنا بواسطة JavaScript -->
+        <!-- قسم أدوات المطورين الفورية -->
+        <section class="card">
+            <h3>🚀 أدوات وتخطيط المشاريع</h3>
+            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك أو الكود المراد ترجمته هنا..."></textarea>
+            
+            <div class="button-grid" style="margin-top: 10px;">
+                <button id="analyze-project-btn">💡 تحليل الفكرة والتقنيات</button>
+                <button id="btn-calculator">💰 الميزانية والوقت</button>
+                <button id="btn-db-generator">🗄️ هيكل قواعد البيانات</button>
+                <button id="btn-code-translator">🔄 مترجم لغات البرمجة</button>
+            </div>
+        </section>
+
+        <!-- قسم خرائط الطريق السريعة -->
+        <section class="card">
+            <h3>🗺️ خرائط طريق المبرمج (Roadmaps)</h3>
+            <div class="button-grid">
+                <button id="btn-roadmap-web">🌐 تطوير الويب</button>
+                <button id="btn-roadmap-mobile">📱 تطوير التطبيقات</button>
+                <button id="btn-roadmap-ai">🤖 الذكاء الاصطناعي</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- النافذة المنبثقة -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-modal" class="close-btn">&times;</span>
+            <h2 id="modal-title" style="margin-bottom: 15px; color: #1d4ed8;"></h2>
+            <div id="modal-body"></div>
         </div>
-    </main>
+    </div>
 
     <script src="data.js"></script>
     <script src="script.js"></script>
