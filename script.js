@@ -1,4 +1,4 @@
-const partA = "AQ.Ab8RN6LeWJ20BDRn";
+Const partA = "AQ.Ab8RN6LeWJ20BDRn";
 const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
 const GEMINI_API_KEY = partA + partB + partC;
@@ -244,23 +244,31 @@ function saveChatToHistory(question, answer) {
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
+// 🛠️ دالة الاتصال المعدلة
 async function callGemini(promptText) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-        })
-    });
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }]
+            })
+        });
 
-    if (!response.ok) {
-        throw new Error("تعذر الاتصال بالخدمة.");
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("تفاصيل الخطأ:", errorData);
+            throw new Error(errorData.error?.message || "تعذر الاتصال بالخدمة.");
+        }
+
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    } catch (err) {
+        console.error("Error fetching Gemini API:", err);
+        throw err;
     }
-
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
 }
 
 function renderResponseWithTools(rawText, originalContext = "") {
