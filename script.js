@@ -19,7 +19,7 @@ const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
 const btnGlossarySidebar = document.getElementById("btn-glossary-sidebar");
 
-// أزرار قسم خرائط طريق المبرمج (Roadmaps)
+// أزرار قسم خرائط طريق المبرمج
 const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
 const btnRoadmapAi = document.getElementById("btn-roadmap-ai");
@@ -31,7 +31,7 @@ const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
 // ----------------------------------------------------
-// ⚙️ وظائف النافذة المنبثقة والتنسيق
+// ⚙️ وظائف النافذة المنبثقة
 // ----------------------------------------------------
 function showModal(title, htmlContent) {
     if(!modalTitle || !modalBody || !modal) return;
@@ -56,7 +56,7 @@ function formatMarkdown(text) {
 }
 
 // ----------------------------------------------------
-// ⚡ الاتصال السريع المباشر بالذكاء الاصطناعي (Streaming & Fast Output)
+// ⚡ الاتصال بالذكاء الاصطناعي (Gemini Stream)
 // ----------------------------------------------------
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
@@ -67,10 +67,7 @@ async function callGeminiStream(promptText, onChunk) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { 
-                    maxOutputTokens: 1024, // تقليل الحد لاستجابة فورية وسريعة
-                    temperature: 0.2 // إجابات مباشرة ومحددة بدون إطالة
-                }
+                generationConfig: { maxOutputTokens: 1024, temperature: 0.3 }
             })
         });
 
@@ -108,7 +105,7 @@ async function callGeminiStream(promptText, onChunk) {
 function prepareFastModal(title) {
     showModal(title, `
         <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري جلب الإجابة السريعة...</div>
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري التحميل...</div>
         </div>
     `);
 }
@@ -122,39 +119,28 @@ function renderResponseWithTools(rawText, originalContext = "") {
                 ${formattedHtml}
             </div>
         </div>
-
-        <div style="margin-top:10px; padding:8px; background:#f1f5f9; border-radius:8px;">
-            <div style="display:flex; gap:6px;">
-                <input type="text" id="followup-input" placeholder="اسأل متابعة سريعة..." style="flex:1; padding:6px 10px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; outline:none;">
-                <button id="send-followup-btn" style="padding:6px 12px; font-size:13px; background:#0f172a; color:#fff; border:none; border-radius:6px; cursor:pointer;">إرسال</button>
-            </div>
-        </div>
-
-        <button id="copy-response-btn" style="width:100%; margin-top:8px; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ الإجابة</button>
+        <button id="copy-response-btn" style="width:100%; margin-top:8px; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ النتيجة</button>
     `;
 
     const copyBtn = document.getElementById("copy-response-btn");
     if (copyBtn) {
         copyBtn.onclick = () => {
             const textToCopy = document.getElementById("response-text-content").innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => alert("تم نسخ النتيجة!"));
+            navigator.clipboard.writeText(textToCopy).then(() => alert("تم النسخ!"));
         };
     }
 }
 
 // ----------------------------------------------------
-// 🚀 أزرار قسم أدوات وتخطيط المشاريع
+// 🚀 أحداث أزرار تخطيط المشاريع
 // ----------------------------------------------------
-
-// 1. تحليل الفكرة والتقنيات
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
 
         prepareFastModal("💡 تحليل الفكرة والتقنيات");
-
-        const prompt = `قدم تحليلاً سريعاً ومباشراً وموجزاً لفكرة المشروع التالية: "${idea}". اذكر في نقاط مركزة: 1. الأهداف والوظائف الأساسية. 2. التقنيات وقواعد البيانات المقترحة. 3. مراحل التنفيذ المباشرة.`;
+        const prompt = `أعط تحليلاً سريعاً ومباشراً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة في نقاط.`;
 
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
@@ -164,19 +150,18 @@ if (analyzeProjectBtn) {
             saveChatToHistory(idea, result);
             renderResponseWithTools(result, idea);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء الاتصال، حاول مرة أخرى.</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء الاتصال.</p>`;
         }
     };
 }
 
-// 2. الميزانية والوقت
 if (btnCalculator) {
     btnCalculator.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
 
         prepareFastModal("💰 الميزانية والوقت");
-        const prompt = `أعط تقدير مالي وزمني مبسط ومباشر بالدولار والأسابيع لتنفيذ: "${idea}".`;
+        const prompt = `قدم تقدير مالي وزمني مقتضب بالدولار والأسابيع لتنفيذ: "${idea}".`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -190,14 +175,13 @@ if (btnCalculator) {
     };
 }
 
-// 3. هيكل قواعد البيانات
 if (btnDbGenerator) {
     btnDbGenerator.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
 
         prepareFastModal("🗄️ هيكل قواعد البيانات");
-        const prompt = `اقترح بشكل مباشر وسريع جداً الجداول والحقول الأساسية (Database Schema) لتطبيق: "${idea}".`;
+        const prompt = `صمم هيكل قواعد بيانات مبسط (Tables & Schema) لمشروع: "${idea}".`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -212,7 +196,7 @@ if (btnDbGenerator) {
 }
 
 // ----------------------------------------------------
-// 📚 أزرار موسوعات البرمجة للبيانات المخزنة
+// 📚 الموسوعات وقاموس المصطلحات
 // ----------------------------------------------------
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
@@ -247,11 +231,8 @@ function setupInternalSearch(dataArray, renderFunction) {
 
 if (btnLanguages) {
     btnLanguages.onclick = () => {
-        if (typeof programmingCategories === 'undefined') return;
-        let categoriesHtml = `
-            <p style="font-size:13px; color:#64748b; margin-bottom:15px; text-align:center;">اختر المجال لعرض اللغات الخاصة به:</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-        `;
+        if (typeof programmingCategories === 'undefined') return alert("ملف data.js غير محمل بشكل صحيح!");
+        let categoriesHtml = `<div style="display:flex; flex-direction:column; gap:10px;">`;
 
         programmingCategories.forEach(cat => {
             categoriesHtml += `
@@ -275,21 +256,13 @@ if (btnLanguages) {
                         <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
                             <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
                             <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                            <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">📋 نسخ المعلومات</button>
+                            <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">📋 نسخ</button>
                         </div>
                     `).join('');
                 });
 
-                const fullViewHtml = `
-                    <button id="back-to-cats" style="margin-bottom:12px; padding:6px 12px; font-size:12px; background:#64748b; color:#fff; border:none; border-radius:6px; cursor:pointer;">⬅ العودة للأقسام</button>
-                    ${searchSetup.searchBoxHtml}
-                `;
-                
-                showModal(selectedCat.title, fullViewHtml);
+                showModal(selectedCat.title, searchSetup.searchBoxHtml);
                 searchSetup.bindEvent();
-
-                const backBtn = document.getElementById("back-to-cats");
-                if (backBtn) backBtn.onclick = () => btnLanguages.click();
             };
         });
     };
@@ -297,13 +270,12 @@ if (btnLanguages) {
 
 if (btnTools) {
     btnTools.onclick = () => {
-        if (typeof devTools === 'undefined') return;
+        if (typeof devTools === 'undefined') return alert("بيانات الأدوات غير مسجلة في data.js!");
         const searchSetup = setupInternalSearch(devTools, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
                     <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                    <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                    <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">📋 نسخ</button>
+                    <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
                 </div>
             `).join('');
         });
@@ -314,13 +286,12 @@ if (btnTools) {
 
 if (btnIdeApps) {
     btnIdeApps.onclick = () => {
-        if (typeof executionApps === 'undefined') return;
+        if (typeof executionApps === 'undefined') return alert("بيانات التطبيقات غير مسجلة في data.js!");
         const searchSetup = setupInternalSearch(executionApps, (items) => {
             return items.map(app => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
                     <h4 style="color:#1d4ed8; margin-bottom:4px;">${app.name}</h4>
-                    <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(app.desc)}</div>
-                    <button class="copy-item-btn" data-copy="${app.name}\n${app.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">📋 نسخ</button>
+                    <div style="font-size:13px; color:#334155;">${formatMarkdown(app.desc)}</div>
                 </div>
             `).join('');
         });
@@ -331,7 +302,7 @@ if (btnIdeApps) {
 
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
-        if (typeof techGlossary === 'undefined') return;
+        if (typeof techGlossary === 'undefined') return alert("قاموس المصطلحات غير موجود في data.js!");
         const searchSetup = setupInternalSearch(techGlossary, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -351,7 +322,7 @@ if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
         showModal("🌐 تطوير الويب", "");
-        renderResponseWithTools(roadmapsData.web, "خارطة طريق الويب");
+        renderResponseWithTools(roadmapsData.web);
     };
 }
 
@@ -359,7 +330,7 @@ if (btnRoadmapMobile) {
     btnRoadmapMobile.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
         showModal("📱 تطوير التطبيقات", "");
-        renderResponseWithTools(roadmapsData.mobile, "خارطة طريق التطبيقات");
+        renderResponseWithTools(roadmapsData.mobile);
     };
 }
 
@@ -367,11 +338,11 @@ if (btnRoadmapAi) {
     btnRoadmapAi.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
         showModal("🤖 الذكاء الاصطناعي", "");
-        renderResponseWithTools(roadmapsData.ai, "خارطة طريق الذكاء الاصطناعي");
+        renderResponseWithTools(roadmapsData.ai);
     };
 }
 
-// 🔍 شريط البحث العلوي
+// 🔍 شريط البحث
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput.value.trim();
@@ -393,7 +364,7 @@ if (searchBtn) {
     };
 }
 
-// 📜 دالة زر السجل
+// 📜 السجل
 function createHistorySidebar() {
     if (document.getElementById("chat-history-trigger")) return;
 
@@ -402,10 +373,8 @@ function createHistorySidebar() {
     btn.innerHTML = "☰ السجل";
     btn.style.cssText = `
         position: fixed; bottom: 20px; left: 20px;
-        background: linear-gradient(145deg, #1e293b, #0f172a);
-        color: #fff; border: none; padding: 10px 18px;
-        border-radius: 25px; box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-        cursor: pointer; z-index: 999; font-weight: bold; font-size: 14px;
+        background: #0f172a; color: #fff; border: none; padding: 10px 18px;
+        border-radius: 25px; cursor: pointer; z-index: 999; font-weight: bold; font-size: 14px;
     `;
     document.body.appendChild(btn);
     btn.onclick = openHistoryModal;
@@ -422,7 +391,7 @@ function openHistoryModal() {
     history.slice().reverse().forEach((item, index) => {
         content += `
             <div class="history-item" data-index="${history.length - 1 - index}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; cursor:pointer;">
-                <div style="font-size:11px; color:#64748b; margin-bottom:2px;">🕒 ${item.date}</div>
+                <div style="font-size:11px; color:#64748b;">🕒 ${item.date}</div>
                 <div style="font-weight:bold; color:#1d4ed8; font-size:14px;">🔍 ${item.question}</div>
             </div>
         `;
