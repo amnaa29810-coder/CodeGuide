@@ -67,6 +67,38 @@ input[type="text"]:focus, textarea:focus {
     border-color: #2563eb;
 }
 
+/* شريط الأزرار التفاعلية السريعة */
+.code-actions-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.chip-btn {
+    background: linear-gradient(145deg, #eff6ff, #dbeafe) !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 3px 6px rgba(37, 99, 235, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.chip-btn:hover {
+    background: linear-gradient(145deg, #dbeafe, #bfdbfe) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 10px rgba(37, 99, 235, 0.18) !important;
+}
+
+.chip-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
 /* الأزرار البارزة والمجسمة 3D */
 button {
     background: linear-gradient(145deg, #2563eb, #1d4ed8);
