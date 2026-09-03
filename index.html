@@ -3,73 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة البرمجة واستشارة المشاريع</title>
+    <title>موسوعة الأدوات والتحليل السريع للمشاريع</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- زر قاموس المصطلحات الجانبي العائم -->
-    <button id="btn-glossary-sidebar" class="floating-btn">📖 قاموس المصطلحات</button>
-
     <div class="container">
-        <header>
-            <h1>💡 منصة البرمجة المباشرة</h1>
-            <p>موسوعة الأدوات والتحليل السريع للمشاريع والقواعد</p>
-        </header>
-
-        <!-- قسم البحث السريع -->
-        <section class="card">
-            <h3>🔍 البحث السريع</h3>
-            <div class="input-group">
+        <!-- قسم البحث وقاموس المصطلحات -->
+        <div class="top-bar">
+            <button id="btn-glossary-sidebar" class="btn-green">📖 قاموس المصطلحات</button>
+            <div class="search-box">
                 <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
-                <button id="search-btn">بحث</button>
+                <button id="search-btn" class="btn-blue">بحث</button>
             </div>
-        </section>
+        </div>
 
-        <!-- قسم الموسوعات -->
-        <section class="card">
+        <!-- الموسوعات البرمجية -->
+        <div class="section-card">
             <h3>📚 الموسوعات البرمجية</h3>
-            <div class="button-grid">
-                <button id="btn-languages">💻 لغات البرمجة</button>
-                <button id="btn-tools">🛠️ الأدوات والتقنيات</button>
-                <button id="btn-ide-apps">📱 تطبيقات ومحررات الكود</button>
-            </div>
-        </section>
+            <button id="btn-languages" class="main-btn">💻 لغات البرمجة</button>
+            <button id="btn-tools" class="main-btn">🛠️ الأدوات والتقنيات</button>
+            <button id="btn-ide-apps" class="main-btn">📱 تطبيقات ومحررات الكود</button>
+        </div>
 
-        <!-- قسم أدوات المشاريع الفورية -->
-        <section class="card">
+        <!-- أدوات وتخطيط المشاريع (تم حذف أزرار الأكواد نهائياً) -->
+        <div class="section-card">
             <h3>🚀 أدوات وتخطيط المشاريع</h3>
-            <textarea id="project-idea" rows="3" placeholder="اكتب فكرة مشروعك أو الكود المراد ترجمته هنا..."></textarea>
+            <textarea id="project-idea" placeholder="اكتب فكرة مشروعك هنا..."></textarea>
             
-            <!-- أزرار الإجراء السريع الخاصة بالكود -->
-            <div class="code-actions-bar">
-                <button id="btn-convert-python-js" class="chip-btn">🔄 تحويل/ترجمة الكود</button>
-                <button id="btn-convert-custom" class="chip-btn">⚡ تحسين وشرح الكود</button>
-            </div>
-            
-            <div class="button-grid" style="margin-top: 15px;">
-                <button id="analyze-project-btn">💡 تحليل الفكرة والتقنيات</button>
-                <button id="btn-calculator">💰 الميزانية والوقت</button>
-                <button id="btn-db-generator">🗄️ هيكل قواعد البيانات</button>
-            </div>
-        </section>
+            <button id="analyze-project-btn" class="main-btn">💡 تحليل الفكرة والتقنيات</button>
+            <button id="btn-calculator" class="main-btn">💰 الميزانية والوقت</button>
+            <button id="btn-db-generator" class="main-btn">🗄️ هيكل قواعد البيانات</button>
+        </div>
 
-        <!-- قسم خرائط الطريق السريعة -->
-        <section class="card">
+        <!-- خرائط طريق المبرمج -->
+        <div class="section-card">
             <h3>🗺️ خرائط طريق المبرمج (Roadmaps)</h3>
-            <div class="button-grid">
-                <button id="btn-roadmap-web">🌐 تطوير الويب</button>
-                <button id="btn-roadmap-mobile">📱 تطوير التطبيقات</button>
-                <button id="btn-roadmap-ai">🤖 الذكاء الاصطناعي</button>
-            </div>
-        </section>
+            <button id="btn-roadmap-web" class="main-btn">🌐 تطوير الويب</button>
+            <button id="btn-roadmap-mobile" class="main-btn">📱 تطوير التطبيقات</button>
+            <button id="btn-roadmap-ai" class="main-btn">🤖 الذكاء الاصطناعي</button>
+        </div>
     </div>
 
-    <!-- النافذة المنبثقة -->
+    <!-- النافذة المنبثقة Modal -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <span id="close-modal" class="close-btn">&times;</span>
-            <h2 id="modal-title" style="margin-bottom: 15px; color: #1d4ed8;"></h2>
+            <h2 id="modal-title">العنوان</h2>
             <div id="modal-body"></div>
         </div>
     </div>
