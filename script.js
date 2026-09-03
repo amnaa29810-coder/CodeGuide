@@ -28,11 +28,9 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// عناصر مترجم الكود
-const codeInput = document.getElementById("code-input");
+// عناصر تحويل وتنسيق الكود السريع
 const btnConvertPythonJs = document.getElementById("btn-convert-python-js");
 const btnConvertCustom = document.getElementById("btn-convert-custom");
-const btnCodeTranslator = document.getElementById("btn-code-translator");
 
 // إنشاء زر السجل الجانبي
 function createHistorySidebar() {
@@ -112,7 +110,7 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// دالة البحث الداخلي للروابط والموسوعات
+// دالة البحث الداخلي للموسوعات
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
@@ -146,7 +144,7 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// ⚡ دالة الاتصال السريعة
+// دالة الاتصال بالذكاء الاصطناعي
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -213,14 +211,7 @@ function renderResponseWithTools(rawText, originalContext = "") {
             <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.5; max-height:280px; overflow-y:auto; color:#1e293b;">${formattedHtml}</div>
         </div>
 
-        <div style="margin-top:10px; padding:8px; background:#f1f5f9; border-radius:8px;">
-            <div style="display:flex; gap:6px;">
-                <input type="text" id="followup-input" placeholder="اسأل متابعة سريعة..." style="flex:1; padding:6px 10px; font-size:13px;">
-                <button id="send-followup-btn" style="padding:6px 12px; font-size:13px;">إرسال</button>
-            </div>
-        </div>
-
-        <button id="copy-response-btn" style="width:100%; margin-top:8px; padding:8px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ الإجابة</button>
+        <button id="copy-response-btn" style="width:100%; margin-top:12px; padding:10px; background:linear-gradient(145deg, #2563eb, #1d4ed8); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">📋 نسخ الإجابة</button>
     `;
 
     modalBody.innerHTML = "";
@@ -235,7 +226,7 @@ function renderResponseWithTools(rawText, originalContext = "") {
     }
 }
 
-// 💻 موسوعات وأزرار الأقسام
+// أزرار الموسوعات
 if (btnLanguages) {
     btnLanguages.onclick = () => {
         if (typeof programmingCategories === 'undefined') return;
@@ -337,7 +328,7 @@ if (btnGlossarySidebar) {
     };
 }
 
-// أزرار خرائط الطريق
+// خرائط الطريق
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
@@ -362,20 +353,14 @@ if (btnRoadmapAi) {
     };
 }
 
-// أزرار المترجم المباشرة
-function getCodeText() {
-    if (codeInput && codeInput.value.trim()) return codeInput.value.trim();
-    if (projectIdea && projectIdea.value.trim()) return projectIdea.value.trim();
-    return "";
-}
-
+// أزرار التحويل السريع للكود
 if (btnConvertPythonJs) {
     btnConvertPythonJs.onclick = async () => {
-        const code = getCodeText();
-        if (!code) return alert("الرجاء كتابة أو لصق الكود أولاً!");
+        const code = projectIdea ? projectIdea.value.trim() : "";
+        if (!code) return alert("اكتبي أو الصقي الكود المراد تحويله في مربع النص أعلاه أولاً!");
 
-        prepareFastModal("🔄 تحويل Python <-> JS");
-        const prompt = `حول هذا الكود فوراً وبدون مقدمات من Python إلى JavaScript أو العكس:\n\n${code}`;
+        prepareFastModal("🔄 تحويل الكود");
+        const prompt = `حول هذا الكود فوراً وبدون مقدمات إلى اللغة المقابلة (مثلاً من Python إلى JS أو العكس):\n\n${code}`;
         
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
@@ -389,28 +374,27 @@ if (btnConvertPythonJs) {
     };
 }
 
-if (btnConvertCustom || btnCodeTranslator) {
-    const targetBtn = btnConvertCustom || btnCodeTranslator;
-    targetBtn.onclick = async () => {
-        const code = getCodeText();
-        if (!code) return alert("الرجاء كتابة الكود أولاً!");
+if (btnConvertCustom) {
+    btnConvertCustom.onclick = async () => {
+        const code = projectIdea ? projectIdea.value.trim() : "";
+        if (!code) return alert("اكتبي الكود المراد تحسينه في مربع النص أعلاه أولاً!");
 
-        prepareFastModal("🔄 ترجمة وتطوير الكود");
-        const prompt = `أنت مترجم أكواد. أعد كتابة هذا الكود أو حوله باللغة الأنسب مع توضيح مقتضب جداً:\n\n${code}`;
+        prepareFastModal("⚡ تحسين وشرح الكود");
+        const prompt = `قم بتحسين وتنسيق الكود التالي مع توضيح باختصار شديد:\n\n${code}`;
         
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 document.getElementById("response-text-content").innerHTML = formatMarkdown(currentText);
             });
-            saveChatToHistory(`ترجمة كود: ${code.substring(0, 20)}...`, result);
+            saveChatToHistory(`تحسين كود: ${code.substring(0, 20)}...`, result);
             renderResponseWithTools(result, code);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التحويل</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء المعالجة</p>`;
         }
     };
 }
 
-// أزرار البحث والتحليل المباشر
+// أدوات المشاريع والبحث
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput.value.trim();
@@ -436,7 +420,7 @@ if (analyzeProjectBtn) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً!");
 
-        prepareFastModal("💡 تحليل الفكرة");
+        prepareFastModal("💡 تحليل الفكرة والتقنيات");
         const prompt = `أعطني ملخص سريع وفوري لفكرة: "${idea}". 1. الهدف 2. التقنيات المقترحة. باختصار شديد.`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
