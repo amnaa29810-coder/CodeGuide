@@ -3,6 +3,7 @@ const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
 const GEMINI_API_KEY = partA + partB + partC;
 
+// العناصر الرئيسية
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -10,8 +11,8 @@ const projectIdea = document.getElementById("project-idea");
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
 const btnCalculator = document.getElementById("btn-calculator");
 const btnDbGenerator = document.getElementById("btn-db-generator");
-const btnCodeTranslator = document.getElementById("btn-code-translator");
 
+// أزرار الموسوعة والخرائط
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
@@ -21,11 +22,21 @@ const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
 const btnRoadmapAi = document.getElementById("btn-roadmap-ai");
 
+// أزرار الموزال
 const modal = document.getElementById("modal");
 const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
+// ----------------------------------------------------
+// 💻 عناصر مترجم الكود المستقل تماماً
+// ----------------------------------------------------
+const codeInput = document.getElementById("code-input");
+const btnConvertPythonJs = document.getElementById("btn-convert-python-js");
+const btnConvertCustom = document.getElementById("btn-convert-custom");
+const btnCodeTranslator = document.getElementById("btn-code-translator"); // الزر القديم لو موجود
+
+// إنشاء زر السجل الجانبي
 function createHistorySidebar() {
     if (document.getElementById("chat-history-trigger")) return;
 
@@ -103,7 +114,7 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// ⚡ دالة الاتصال المباشرة السريعة للغاية مع تحديد حد أقصى للرد الكلمات (Max Tokens)
+// ⚡ دالة الاتصال السريعة جداً (Streaming)
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -114,8 +125,8 @@ async function callGeminiStream(promptText, onChunk) {
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
                 generationConfig: {
-                    maxOutputTokens: 300, // تحديد حجم الإجابة لتظهر فوراً
-                    temperature: 0.2 // تقليل وقت التفكير
+                    maxOutputTokens: 400,
+                    temperature: 0.2
                 }
             })
         });
@@ -156,7 +167,7 @@ async function callGeminiStream(promptText, onChunk) {
 function prepareFastModal(title) {
     showModal(title, `
         <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.5; max-height:280px; overflow-y:auto; color:#1e293b;">⚡ جاري كتابة الإجابة فوراً...</div>
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.5; max-height:280px; overflow-y:auto; color:#1e293b;">⚡ جاري الكتابة فوراً...</div>
         </div>
     `);
 }
@@ -192,7 +203,63 @@ function renderResponseWithTools(rawText, originalContext = "") {
     }
 }
 
-// ⚡ الأزرار السريعة
+// ----------------------------------------------------
+// 🔄 أزرار مترجم الكود المستقلة
+// ----------------------------------------------------
+
+// دالة مساعدة لجلب الكود المدخل
+function getCodeText() {
+    if (codeInput && codeInput.value.trim()) return codeInput.value.trim();
+    if (projectIdea && projectIdea.value.trim()) return projectIdea.value.trim();
+    return "";
+}
+
+// 1. تحويل سريع ومباشر بين بايثون وجافاسكريبت
+if (btnConvertPythonJs) {
+    btnConvertPythonJs.onclick = async () => {
+        const code = getCodeText();
+        if (!code) return alert("الرجاء كتابة أو لصق الكود أولاً!");
+
+        prepareFastModal("🔄 تحويل Python <-> JS");
+        const prompt = `حول هذا الكود فوراً وبدون مقدمات من Python إلى JavaScript أو العكس:\n\n${code}`;
+        
+        try {
+            const result = await callGeminiStream(prompt, (currentText) => {
+                document.getElementById("response-text-content").innerHTML = formatMarkdown(currentText);
+            });
+            saveChatToHistory(`تحويل كود: ${code.substring(0, 20)}...`, result);
+            renderResponseWithTools(result, code);
+        } catch (err) {
+            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التحويل</p>`;
+        }
+    };
+}
+
+// 2. تحويل لأي لغة يحددها المستخدم أو الكود نفسه
+if (btnConvertCustom || btnCodeTranslator) {
+    const targetBtn = btnConvertCustom || btnCodeTranslator;
+    targetBtn.onclick = async () => {
+        const code = getCodeText();
+        if (!code) return alert("الرجاء كتابة الكود أولاً!");
+
+        prepareFastModal("🔄 ترجمة وتطوير الكود");
+        const prompt = `أنت مترجم أكواد. أعد كتابة هذا الكود أو حوله باللغة الأنسب مع توضيح مقتضب جداً:\n\n${code}`;
+        
+        try {
+            const result = await callGeminiStream(prompt, (currentText) => {
+                document.getElementById("response-text-content").innerHTML = formatMarkdown(currentText);
+            });
+            saveChatToHistory(`ترجمة كود: ${code.substring(0, 20)}...`, result);
+            renderResponseWithTools(result, code);
+        } catch (err) {
+            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التحويل</p>`;
+        }
+    };
+}
+
+// ----------------------------------------------------
+// ⚡ باقي أزرار التطبيق المعتادة
+// ----------------------------------------------------
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput.value.trim();
@@ -200,7 +267,7 @@ if (searchBtn) {
         searchInput.value = "";
         prepareFastModal("🔍 نتيجة البحث");
 
-        const prompt = `أجب فوراً في 3 نقاط مقتضبة جداً بدون مقدمات باللغة العربية عن: ${query}`;
+        const prompt = `أجب فوراً في 3 نقاط مقتضبة بدون مقدمات باللغة العربية عن: ${query}`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 document.getElementById("response-text-content").innerHTML = formatMarkdown(currentText);
@@ -215,11 +282,11 @@ if (searchBtn) {
 
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
-        const idea = projectIdea.value.trim();
+        const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً!");
 
         prepareFastModal("💡 تحليل الفكرة");
-        const prompt = `أعطني ملخص سريع وفوري لفكرة: "${idea}". 1. الهدف 2. التقنيات المقترحة. باختصار شديد دون مقدمات.`;
+        const prompt = `أعطني ملخص سريع وفوري لفكرة: "${idea}". 1. الهدف 2. التقنيات المقترحة. باختصار شديد.`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 document.getElementById("response-text-content").innerHTML = formatMarkdown(currentText);
