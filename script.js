@@ -3,6 +3,7 @@ const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
 const GEMINI_API_KEY = partA + partB + partC;
 
+// 1. ربط الواجهة
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -25,6 +26,7 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
+// 2. النافذة المنبثقة
 function showModal(title, htmlContent) {
     if(!modalTitle || !modalBody || !modal) return;
     modalTitle.innerText = title;
@@ -41,12 +43,14 @@ window.onclick = (e) => {
 };
 
 function formatMarkdown(text) {
+    if (!text) return "";
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/\n/g, '<br>');
 }
 
+// 3. الذكاء الاصطناعي
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -119,7 +123,7 @@ function renderResponseWithTools(rawText) {
     }
 }
 
-// أزرار تخطيط المشاريع
+// 4. أزرار أدوات المشاريع
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -177,8 +181,9 @@ if (btnDbGenerator) {
     };
 }
 
-// الموسوعات البرمجية
+// 5. محرك البحث والـ Modal للموسوعات
 function setupInternalSearch(dataArray, renderFunction) {
+    const list = dataArray || [];
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
                style="width:100%; padding:10px 12px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px; box-sizing:border-box;">
@@ -189,12 +194,17 @@ function setupInternalSearch(dataArray, renderFunction) {
         const container = document.getElementById("modal-items-container");
         
         const updateList = (filterText = "") => {
-            if (!dataArray) return;
-            const filtered = dataArray.filter(item => 
-                item.name.toLowerCase().includes(filterText.toLowerCase()) || 
-                (item.desc && item.desc.toLowerCase().includes(filterText.toLowerCase()))
-            );
-            container.innerHTML = renderFunction(filtered);
+            const filtered = list.filter(item => {
+                const name = item.name || item.title || "";
+                const desc = item.desc || item.description || "";
+                return name.toLowerCase().includes(filterText.toLowerCase()) || 
+                       desc.toLowerCase().includes(filterText.toLowerCase());
+            });
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#64748b; padding:10px;">لا توجد نتائج مطابقة.</p>`;
+            } else {
+                container.innerHTML = renderFunction(filtered);
+            }
         };
         
         updateList();
@@ -202,9 +212,10 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
+// 6. تشغيل الموسوعات وقاموس المصطلحات
 if (btnLanguages) {
     btnLanguages.onclick = () => {
-        if (typeof programmingCategories === 'undefined') return alert("ملف data.js غير موجود!");
+        if (typeof programmingCategories === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
         let categoriesHtml = `<div style="display:flex; flex-direction:column; gap:10px;">`;
         programmingCategories.forEach(cat => {
             categoriesHtml += `
@@ -221,6 +232,7 @@ if (btnLanguages) {
             btn.onclick = () => {
                 const catId = btn.getAttribute("data-id");
                 const selectedCat = programmingCategories.find(c => c.id === catId);
+                
                 const searchSetup = setupInternalSearch(selectedCat.languages, (items) => {
                     return items.map(item => `
                         <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -238,7 +250,7 @@ if (btnLanguages) {
 
 if (btnTools) {
     btnTools.onclick = () => {
-        if (typeof devTools === 'undefined') return;
+        if (typeof devTools === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
         const searchSetup = setupInternalSearch(devTools, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -254,7 +266,7 @@ if (btnTools) {
 
 if (btnIdeApps) {
     btnIdeApps.onclick = () => {
-        if (typeof executionApps === 'undefined') return;
+        if (typeof executionApps === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
         const searchSetup = setupInternalSearch(executionApps, (items) => {
             return items.map(app => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -270,7 +282,7 @@ if (btnIdeApps) {
 
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
-        if (typeof techGlossary === 'undefined') return;
+        if (typeof techGlossary === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
         const searchSetup = setupInternalSearch(techGlossary, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -284,6 +296,7 @@ if (btnGlossarySidebar) {
     };
 }
 
+// 7. أزرار خرائط الطريق
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
@@ -308,11 +321,12 @@ if (btnRoadmapAi) {
     };
 }
 
+// 8. البحث العلوي والسجل
 if (searchBtn) {
     searchBtn.onclick = async () => {
-        const query = searchInput.value.trim();
+        const query = searchInput ? searchInput.value.trim() : "";
         if (!query) return;
-        searchInput.value = "";
+        if (searchInput) searchInput.value = "";
         prepareFastModal("🔍 نتيجة البحث");
         const prompt = `أجب فوراً بإيجاز وسرعة في نقاط عن: ${query}`;
         try {
