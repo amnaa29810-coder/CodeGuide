@@ -6,14 +6,14 @@ const GEMINI_API_KEY = partA + partB + partC;
 // 1. ربط عناصر الواجهة الرئيسية
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
-const projectIdea = document.getElementById("project-idea"); // المربع الموحد للفكرة أو الكود
+const projectIdea = document.getElementById("project-idea");
 
 // أزرار قسم أداة وتخطيط المشاريع
-const btnCodeTranslator = document.getElementById("btn-code-translator"); // زر تحويل/ترجمة الكود
-const btnCodeExplain = document.getElementById("btn-code-explain");       // زر تحسين وشرح الكود
-const analyzeProjectBtn = document.getElementById("analyze-project-btn"); // تحليل الفكرة والتقنيات
-const btnCalculator = document.getElementById("btn-calculator");         // الميزانية والوقت
-const btnDbGenerator = document.getElementById("btn-db-generator");       // هيكل قواعد البيانات
+const btnCodeTranslator = document.getElementById("btn-code-translator");
+const btnCodeExplain = document.getElementById("btn-code-explain");
+const analyzeProjectBtn = document.getElementById("analyze-project-btn");
+const btnCalculator = document.getElementById("btn-calculator");
+const btnDbGenerator = document.getElementById("btn-db-generator");
 
 // أزرار قسم الموسوعات البرمجية
 const btnLanguages = document.getElementById("btn-languages");
@@ -69,7 +69,7 @@ async function callGeminiStream(promptText, onChunk) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { maxOutputTokens: 500, temperature: 0.2 }
+                generationConfig: { maxOutputTokens: 2048, temperature: 0.4 } // زيادة الحد لتوفير ردود مفصلة
             })
         });
 
@@ -107,7 +107,7 @@ async function callGeminiStream(promptText, onChunk) {
 function prepareFastModal(title) {
     showModal(title, `
         <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري كتابة الإجابة فوراً...</div>
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري كتابة الخطة التفصيلية فوراً...</div>
         </div>
     `);
 }
@@ -189,14 +189,30 @@ if (btnCodeExplain) {
     };
 }
 
-// 3. تحليل الفكرة والتقنيات
+// 3. تحليل الفكرة والتقنيات (خطة مفصلة وشاملة خطوة بخطوة)
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
 
-        prepareFastModal("💡 تحليل الفكرة والتقنيات");
-        const prompt = `قدم تحليلاً مختصراً ومباشراً لفكرة المشروع التالية: "${idea}". 1. الهدف الرئيس 2. أفضل التقنيات ولغات البرمجة المقترحة للعمل بها.`;
+        prepareFastModal("💡 خطة وتحليل المشروع الشامل");
+
+        const prompt = `
+أنت مهندس برمجيات ومستشار مشاريع تقنية خبير.
+قم بإعداد دراسة وخطة عمل مفصلة وشاملة خطوة بخطوة لفكرة المشروع التالية: "${idea}".
+
+يجب أن توضح الإجابة بالتفصيل النقاط التالية:
+1. **نطاق المشروع والأهداف الرئيسية**: شرح مفصل للمشكلة والحل.
+2. **الميزات الأساسية (Core Features)**: قائمة بالخصائص والوظائف المطلوبة في النظام.
+3. **التقنيات والمكدس البرمجي (Tech Stack)**: أفضل اللغات، أطر العمل، وقواعد البيانات المناسبة مع ذكر سبب الاختيار.
+4. **خطة التنفيذ خطوة بخطوة (Roadmap)**:
+   - المرحلة 1: التخطيط والتصميم (UI/UX).
+   - المرحلة 2: تطوير الباك إند والفرونت إند.
+   - المرحلة 3: الاختبار والتكامل (Testing & Integration).
+   - المرحلة 4: الإطلاق والنشر (Deployment).
+5. **التحديات المتوقعة والنصائح**: أهم النصائح لضمان نجاح المشروع.
+`;
+
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -205,7 +221,7 @@ if (analyzeProjectBtn) {
             saveChatToHistory(idea, result);
             renderResponseWithTools(result, idea);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء الاتصال، حاول مرة أخرى.</p>`;
         }
     };
 }
