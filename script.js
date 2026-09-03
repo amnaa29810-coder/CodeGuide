@@ -3,36 +3,28 @@ const partB = "dr51eHaNYnsFTSzEuM2";
 const partC = "WjFjLNK5XwrpYAg";
 const GEMINI_API_KEY = partA + partB + partC;
 
-// 1. ربط عناصر الواجهة الرئيسية
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
 
-// أزرار قسم أدوات وتخطيط المشاريع
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
 const btnCalculator = document.getElementById("btn-calculator");
 const btnDbGenerator = document.getElementById("btn-db-generator");
 
-// أزرار قسم الموسوعات البرمجية
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
 const btnIdeApps = document.getElementById("btn-ide-apps");
 const btnGlossarySidebar = document.getElementById("btn-glossary-sidebar");
 
-// أزرار قسم خرائط طريق المبرمج
 const btnRoadmapWeb = document.getElementById("btn-roadmap-web");
 const btnRoadmapMobile = document.getElementById("btn-roadmap-mobile");
 const btnRoadmapAi = document.getElementById("btn-roadmap-ai");
 
-// عناصر النافذة المنبثقة (Modal)
 const modal = document.getElementById("modal");
 const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// ----------------------------------------------------
-// ⚙️ وظائف النافذة المنبثقة
-// ----------------------------------------------------
 function showModal(title, htmlContent) {
     if(!modalTitle || !modalBody || !modal) return;
     modalTitle.innerText = title;
@@ -55,9 +47,6 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// ----------------------------------------------------
-// ⚡ الاتصال بالذكاء الاصطناعي (Gemini Stream)
-// ----------------------------------------------------
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -110,9 +99,8 @@ function prepareFastModal(title) {
     `);
 }
 
-function renderResponseWithTools(rawText, originalContext = "") {
+function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
-    
     modalBody.innerHTML = `
         <div style="padding:5px;">
             <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">
@@ -131,24 +119,20 @@ function renderResponseWithTools(rawText, originalContext = "") {
     }
 }
 
-// ----------------------------------------------------
-// 🚀 أحداث أزرار تخطيط المشاريع
-// ----------------------------------------------------
+// أزرار تخطيط المشاريع
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
-
         prepareFastModal("💡 تحليل الفكرة والتقنيات");
         const prompt = `أعط تحليلاً سريعاً ومباشراً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة في نقاط.`;
-
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
                 if (textElem) textElem.innerHTML = formatMarkdown(currentText);
             });
             saveChatToHistory(idea, result);
-            renderResponseWithTools(result, idea);
+            renderResponseWithTools(result);
         } catch (err) {
             modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء الاتصال.</p>`;
         }
@@ -159,7 +143,6 @@ if (btnCalculator) {
     btnCalculator.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
-
         prepareFastModal("💰 الميزانية والوقت");
         const prompt = `قدم تقدير مالي وزمني مقتضب بالدولار والأسابيع لتنفيذ: "${idea}".`;
         try {
@@ -168,7 +151,7 @@ if (btnCalculator) {
                 if (textElem) textElem.innerHTML = formatMarkdown(currentText);
             });
             saveChatToHistory(`ميزانية: ${idea}`, result);
-            renderResponseWithTools(result, idea);
+            renderResponseWithTools(result);
         } catch (err) {
             modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
         }
@@ -179,25 +162,22 @@ if (btnDbGenerator) {
     btnDbGenerator.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
-
         prepareFastModal("🗄️ هيكل قواعد البيانات");
-        const prompt = `صمم هيكل قواعد بيانات مبسط (Tables & Schema) لمشروع: "${idea}".`;
+        const prompt = `صمم هيكل قواعد بيانات مبسط لمشروع: "${idea}".`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
                 if (textElem) textElem.innerHTML = formatMarkdown(currentText);
             });
             saveChatToHistory(`Schema: ${idea}`, result);
-            renderResponseWithTools(result, idea);
+            renderResponseWithTools(result);
         } catch (err) {
             modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
         }
     };
 }
 
-// ----------------------------------------------------
-// 📚 الموسوعات وقاموس المصطلحات
-// ----------------------------------------------------
+// الموسوعات البرمجية
 function setupInternalSearch(dataArray, renderFunction) {
     const searchBoxHtml = `
         <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
@@ -215,13 +195,6 @@ function setupInternalSearch(dataArray, renderFunction) {
                 (item.desc && item.desc.toLowerCase().includes(filterText.toLowerCase()))
             );
             container.innerHTML = renderFunction(filtered);
-
-            document.querySelectorAll(".copy-item-btn").forEach(btn => {
-                btn.onclick = (e) => {
-                    const textToCopy = e.target.getAttribute("data-copy");
-                    navigator.clipboard.writeText(textToCopy).then(() => alert("تم النسخ!"));
-                };
-            });
         };
         
         updateList();
@@ -231,9 +204,8 @@ function setupInternalSearch(dataArray, renderFunction) {
 
 if (btnLanguages) {
     btnLanguages.onclick = () => {
-        if (typeof programmingCategories === 'undefined') return alert("ملف data.js غير محمل بشكل صحيح!");
+        if (typeof programmingCategories === 'undefined') return alert("ملف data.js غير موجود!");
         let categoriesHtml = `<div style="display:flex; flex-direction:column; gap:10px;">`;
-
         programmingCategories.forEach(cat => {
             categoriesHtml += `
                 <button class="cat-select-btn" data-id="${cat.id}" style="text-align:right; width:100%; background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px; border-radius:10px; cursor:pointer;">
@@ -243,24 +215,20 @@ if (btnLanguages) {
             `;
         });
         categoriesHtml += `</div>`;
-
         showModal("💻 موسوعة أقسام لغات البرمجة", categoriesHtml);
 
         document.querySelectorAll(".cat-select-btn").forEach(btn => {
             btn.onclick = () => {
                 const catId = btn.getAttribute("data-id");
                 const selectedCat = programmingCategories.find(c => c.id === catId);
-                
                 const searchSetup = setupInternalSearch(selectedCat.languages, (items) => {
                     return items.map(item => `
                         <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
                             <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
                             <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                            <button class="copy-item-btn" data-copy="${item.name}\n${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">📋 نسخ</button>
                         </div>
                     `).join('');
                 });
-
                 showModal(selectedCat.title, searchSetup.searchBoxHtml);
                 searchSetup.bindEvent();
             };
@@ -270,7 +238,7 @@ if (btnLanguages) {
 
 if (btnTools) {
     btnTools.onclick = () => {
-        if (typeof devTools === 'undefined') return alert("بيانات الأدوات غير مسجلة في data.js!");
+        if (typeof devTools === 'undefined') return;
         const searchSetup = setupInternalSearch(devTools, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -286,7 +254,7 @@ if (btnTools) {
 
 if (btnIdeApps) {
     btnIdeApps.onclick = () => {
-        if (typeof executionApps === 'undefined') return alert("بيانات التطبيقات غير مسجلة في data.js!");
+        if (typeof executionApps === 'undefined') return;
         const searchSetup = setupInternalSearch(executionApps, (items) => {
             return items.map(app => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
@@ -302,13 +270,12 @@ if (btnIdeApps) {
 
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
-        if (typeof techGlossary === 'undefined') return alert("قاموس المصطلحات غير موجود في data.js!");
+        if (typeof techGlossary === 'undefined') return;
         const searchSetup = setupInternalSearch(techGlossary, (items) => {
             return items.map(item => `
                 <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
                     <h4 style="color:#059669; margin-bottom:6px;">📌 ${item.name}</h4>
                     <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                    <button class="copy-item-btn" data-copy="${item.name}: ${item.desc}" style="margin-top:8px; width:100%; padding:6px; font-size:12px; background:#059669; color:#fff; border:none; border-radius:6px; cursor:pointer;">📋 نسخ المصطلح</button>
                 </div>
             `).join('');
         });
@@ -317,7 +284,6 @@ if (btnGlossarySidebar) {
     };
 }
 
-// 🗺️ أزرار خرائط الطريق
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
@@ -342,14 +308,12 @@ if (btnRoadmapAi) {
     };
 }
 
-// 🔍 شريط البحث
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput.value.trim();
         if (!query) return;
         searchInput.value = "";
         prepareFastModal("🔍 نتيجة البحث");
-
         const prompt = `أجب فوراً بإيجاز وسرعة في نقاط عن: ${query}`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
@@ -357,17 +321,15 @@ if (searchBtn) {
                 if (textElem) textElem.innerHTML = formatMarkdown(currentText);
             });
             saveChatToHistory(query, result);
-            renderResponseWithTools(result, query);
+            renderResponseWithTools(result);
         } catch (err) {
             modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
         }
     };
 }
 
-// 📜 السجل
 function createHistorySidebar() {
     if (document.getElementById("chat-history-trigger")) return;
-
     const btn = document.createElement("button");
     btn.id = "chat-history-trigger";
     btn.innerHTML = "☰ السجل";
@@ -386,7 +348,6 @@ function openHistoryModal() {
         showModal("📜 السجل", "<p style='text-align:center; padding:20px;'>لا يوجد سجل حتى الآن.</p>");
         return;
     }
-
     let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
     history.slice().reverse().forEach((item, index) => {
         content += `
@@ -397,7 +358,6 @@ function openHistoryModal() {
         `;
     });
     content += `</div>`;
-    
     showModal("📜 سجل البحث والمحادثات", content);
 
     document.querySelectorAll(".history-item").forEach(el => {
@@ -405,7 +365,7 @@ function openHistoryModal() {
             const idx = el.getAttribute("data-index");
             const selected = history[idx];
             showModal(`💡 ${selected.question}`, "");
-            renderResponseWithTools(selected.answer, selected.question);
+            renderResponseWithTools(selected.answer);
         };
     });
 }
