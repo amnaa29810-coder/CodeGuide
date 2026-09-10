@@ -54,9 +54,9 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بالذكاء الاصطناعي مع تحديث اسم الموديل ليكون معتمداً ومستقراً
+// 3. الاتصال بـ Gemini API - تم تعديل اسم الموديل إلى gemini-2.5-flash الصحيح
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
     try {
         const response = await fetch(url, {
@@ -70,7 +70,7 @@ async function callGeminiStream(promptText, onChunk) {
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error?.message || `خطأ في الاتصال بالخدمة (${response.status})`);
+            throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
         }
 
         const reader = response.body.getReader();
