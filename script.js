@@ -54,17 +54,16 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API - تم تعديل اسم الموديل إلى gemini-2.5-flash الصحيح
+// 3. الاتصال بـ Gemini API مع الموديل المطلوب gemini-3.6-flash بالطريقة الثابتة
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
         const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { maxOutputTokens: 2048, temperature: 0.3 }
+                contents: [{ parts: [{ text: promptText }] }]
             })
         });
 
@@ -73,29 +72,11 @@ async function callGeminiStream(promptText, onChunk) {
             throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let fullText = "";
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-            
-            for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                    try {
-                        const json = JSON.parse(line.replace("data: ", ""));
-                        const textPart = json.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                        fullText += textPart;
-                        onChunk(fullText);
-                    } catch (e) {}
-                }
-            }
-        }
+        const data = await response.json();
+        const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
+        onChunk(fullText);
         return fullText;
+
     } catch (err) {
         console.error(err);
         throw err;
