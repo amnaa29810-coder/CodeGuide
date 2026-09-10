@@ -11,6 +11,7 @@ const projectIdea = document.getElementById("project-idea");
 const analyzeProjectBtn = document.getElementById("analyze-project-btn");
 const btnCalculator = document.getElementById("btn-calculator");
 const btnDbGenerator = document.getElementById("btn-db-generator");
+const btnCodeTranslator = document.getElementById("btn-code-translator");
 
 const btnLanguages = document.getElementById("btn-languages");
 const btnTools = document.getElementById("btn-tools");
@@ -26,7 +27,7 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// 2. النافذة المنبثقة
+// 2. النافذة المنبثقة والتهيئة
 function showModal(title, htmlContent) {
     if(!modalTitle || !modalBody || !modal) return;
     modalTitle.innerText = title;
@@ -50,7 +51,7 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الذكاء الاصطناعي
+// 3. الاتصال بالذكاء الاصطناعي
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -123,7 +124,7 @@ function renderResponseWithTools(rawText) {
     }
 }
 
-// 4. أزرار أدوات المشاريع
+// 4. أدوات تحليل وتخطيط المشاريع
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -181,7 +182,74 @@ if (btnDbGenerator) {
     };
 }
 
-// 5. محرك البحث والـ Modal للموسوعات
+// 5. زر مترجم ومولد لغات البرمجة المستقل
+if (btnCodeTranslator) {
+    btnCodeTranslator.onclick = () => {
+        const translatorHtml = `
+            <div style="display:flex; flex-direction:column; gap:12px; text-align:right;">
+                <label style="font-size:13px; font-weight:bold; color:#334155;">اكتبي الكود للتحويل أو اطلبي كود جديد:</label>
+                <textarea id="translator-input" placeholder="مثال للتحويل: print('Hello World')&#10;أو مثال للطلب: اكتب لي كود اتصال بـ MySQL في PHP" 
+                          style="width:100%; height:95px; padding:10px; border:1px solid #cbd5e1; border-radius:10px; resize:none; font-size:13px; outline:none; background:#f8fafc; font-family:monospace; text-align:left; dir:ltr;"></textarea>
+                
+                <input type="text" id="target-language" placeholder="اللغة المطلوبة (مثال: Java, Python, C++)" 
+                       style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; background:#fff; text-align:right;">
+
+                <div style="display:flex; gap:8px; margin-top:5px;">
+                    <button id="exec-convert-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🔄 تحويل الكود</button>
+                    <button id="exec-generate-btn" style="flex:1; padding:10px; background:#10b981; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✨ توليد كود جديد</button>
+                </div>
+            </div>
+        `;
+
+        showModal("🔄 مترجم ومولد لغات البرمجة", translatorHtml);
+
+        // تحويل كود
+        document.getElementById("exec-convert-btn").onclick = async () => {
+            const code = document.getElementById("translator-input").value.trim();
+            const lang = document.getElementById("target-language").value.trim();
+
+            if (!code || !lang) return alert("يرجى إدخال الكود وتحديد اللغة المستهدفة للتحويل!");
+
+            prepareFastModal(`🔄 تحويل الكود إلى ${lang}`);
+            const prompt = `قم بتحويل الكود التالي بدقة إلى لغة (${lang}) مع شرح مختصر لأهم النواحي البرمجية:\n\`\`\`\n${code}\n\`\`\``;
+
+            try {
+                const result = await callGeminiStream(prompt, (currentText) => {
+                    const textElem = document.getElementById("response-text-content");
+                    if (textElem) textElem.innerHTML = formatMarkdown(currentText);
+                });
+                saveChatToHistory(`تحويل كود لـ ${lang}`, result);
+                renderResponseWithTools(result);
+            } catch (err) {
+                modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التحويل.</p>`;
+            }
+        };
+
+        // طلب/توليد كود
+        document.getElementById("exec-generate-btn").onclick = async () => {
+            const request = document.getElementById("translator-input").value.trim();
+            const lang = document.getElementById("target-language").value.trim();
+
+            if (!request) return alert("يرجى كتابة الكود أو الوظيفة المطلوبة!");
+
+            prepareFastModal("✨ توليد الكود المطلوب");
+            const prompt = `اكتب كوداً برمجياً بـ ${lang ? "لغة " + lang : "اللغة المناسبة"} لإنجاز ما يلي:\n${request}\nمع تعليقات توضيحية.`;
+
+            try {
+                const result = await callGeminiStream(prompt, (currentText) => {
+                    const textElem = document.getElementById("response-text-content");
+                    if (textElem) textElem.innerHTML = formatMarkdown(currentText);
+                });
+                saveChatToHistory(`طلب كود: ${request.slice(0, 15)}...`, result);
+                renderResponseWithTools(result);
+            } catch (err) {
+                modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التوليد.</p>`;
+            }
+        };
+    };
+}
+
+// 6. وظائف الموسوعات والبحث الداخلي
 function setupInternalSearch(dataArray, renderFunction) {
     const list = dataArray || [];
     const searchBoxHtml = `
@@ -212,7 +280,6 @@ function setupInternalSearch(dataArray, renderFunction) {
     }};
 }
 
-// 6. تشغيل الموسوعات وقاموس المصطلحات
 if (btnLanguages) {
     btnLanguages.onclick = () => {
         if (typeof programmingCategories === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
@@ -296,7 +363,7 @@ if (btnGlossarySidebar) {
     };
 }
 
-// 7. أزرار خرائط الطريق
+// 7. خرائط الطريق
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
