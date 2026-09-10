@@ -43,15 +43,19 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
+// تنسيق النصوص البرمجية وعناوين الـ Markdown
 function formatMarkdown(text) {
     if (!text) return "";
     return text
+        .replace(/### (.*?)\n/g, '<strong style="color:#1d4ed8; font-size:15px; display:block; margin-top:8px;">$1</strong>')
+        .replace(/## (.*?)\n/g, '<strong style="color:#0f172a; font-size:16px; display:block; margin-top:10px;">$1</strong>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/---/g, '<hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">')
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بالذكاء الاصطناعي
+// 3. الاتصال بالذكاء الاصطناعي مع زيادة الـ Tokens لمنع انقطاع الإجابة
 async function callGeminiStream(promptText, onChunk) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
@@ -61,7 +65,7 @@ async function callGeminiStream(promptText, onChunk) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { maxOutputTokens: 1024, temperature: 0.3 }
+                generationConfig: { maxOutputTokens: 4096, temperature: 0.3 }
             })
         });
 
@@ -99,7 +103,7 @@ async function callGeminiStream(promptText, onChunk) {
 function prepareFastModal(title) {
     showModal(title, `
         <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري التحميل...</div>
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:350px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري التحميل...</div>
         </div>
     `);
 }
@@ -108,7 +112,7 @@ function renderResponseWithTools(rawText) {
     const formattedHtml = formatMarkdown(rawText);
     modalBody.innerHTML = `
         <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">
+            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:350px; overflow-y:auto; color:#1e293b; text-align:right;">
                 ${formattedHtml}
             </div>
         </div>
@@ -130,7 +134,7 @@ if (analyzeProjectBtn) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("💡 تحليل الفكرة والتقنيات");
-        const prompt = `أعط تحليلاً سريعاً ومباشراً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة في نقاط.`;
+        const prompt = `أعط تحليلاً كاملاً وشاملاً وفنياً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة بأسلوب منظم.`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -149,7 +153,7 @@ if (btnCalculator) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("💰 الميزانية والوقت");
-        const prompt = `قدم تقدير مالي وزمني مقتضب بالدولار والأسابيع لتنفيذ: "${idea}".`;
+        const prompt = `قدم تقدير مالي وزمني تفصيلي بالدولار والأسابيع لتنفيذ مشروع: "${idea}".`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -168,7 +172,7 @@ if (btnDbGenerator) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("🗄️ هيكل قواعد البيانات");
-        const prompt = `صمم هيكل قواعد بيانات مبسط لمشروع: "${idea}".`;
+        const prompt = `صمم هيكل قواعد بيانات كاملاً مع الجداول والعلاقات والأنواع الأساسية لمشروع: "${idea}".`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
@@ -211,7 +215,7 @@ if (btnCodeTranslator) {
             if (!code || !lang) return alert("يرجى إدخال الكود وتحديد اللغة المستهدفة للتحويل!");
 
             prepareFastModal(`🔄 تحويل الكود إلى ${lang}`);
-            const prompt = `قم بتحويل الكود التالي بدقة إلى لغة (${lang}) مع شرح مختصر لأهم النواحي البرمجية:\n\`\`\`\n${code}\n\`\`\``;
+            const prompt = `قم بتحويل الكود التالي بدقة إلى لغة (${lang}) مع شرح مفصل لأهم النواحي البرمجية والتغييرات:\n\`\`\`\n${code}\n\`\`\``;
 
             try {
                 const result = await callGeminiStream(prompt, (currentText) => {
@@ -395,7 +399,7 @@ if (searchBtn) {
         if (!query) return;
         if (searchInput) searchInput.value = "";
         prepareFastModal("🔍 نتيجة البحث");
-        const prompt = `أجب فوراً بإيجاز وسرعة في نقاط عن: ${query}`;
+        const prompt = `أجب بإيجاز وسرعة ووضوح عن: ${query}`;
         try {
             const result = await callGeminiStream(prompt, (currentText) => {
                 const textElem = document.getElementById("response-text-content");
