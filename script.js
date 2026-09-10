@@ -2,6 +2,9 @@
 const encodedKey = "QVEuQWI4Uk42SmJ5cVRvWW9WVjFkbGVycVA2WXNuSFMzM0t4MUM2R2ZKSGs3SzAtam5lR1E=";
 const GEMINI_API_KEY = atob(encodedKey).trim().replace(/\s+/g, '');
 
+// متغير لتخزين اسم الموديل المتاح حسابك فور اكتشافه
+let cachedAvailableModel = null;
+
 // 1. ربط الواجهة
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
@@ -53,16 +56,39 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API المباشر والمستقر
+// 3. كشف الموديلات المتاحة تلقائياً لحسابك بدلاً من التخمين
+async function getWorkingModelName() {
+    if (cachedAvailableModel) return cachedAvailableModel;
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+        if (res.ok) {
+            const data = await res.json();
+            const generateModel = data.models?.find(m => m.supportedGenerationMethods?.includes("generateContent"));
+            if (generateModel && generateModel.name) {
+                // اسم الموديل الكامل يرجع مثل: models/gemini-2.5-flash أو غيره
+                cachedAvailableModel = generateModel.name.replace("models/", "");
+                return cachedAvailableModel;
+            }
+        }
+    } catch (e) {
+        console.warn("تعذر جلب قائمة الموديلات تلقائياً، سيتم اللجوء للموديل الافتراضي.");
+    }
+
+    // fallback افتراضي في حال فشل الاستعلام
+    cachedAvailableModel = "gemini-1.5-flash";
+    return cachedAvailableModel;
+}
+
+// الاتصال بـ Gemini API الديناميكي
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const modelName = await getWorkingModelName();
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
         const response = await fetch(url, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }]
             })
