@@ -43,7 +43,6 @@ window.onclick = (e) => {
     if (e.target === modal) modal.classList.add("hidden");
 };
 
-// تنسيق النصوص البرمجية وعناوين الـ Markdown
 function formatMarkdown(text) {
     if (!text) return "";
     return text
@@ -55,9 +54,9 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بالذكاء الاصطناعي مع زيادة الـ Tokens لمنع انقطاع الإجابة
+// 3. الاتصال بالذكاء الاصطناعي مع تحديث اسم الموديل ليكون معتمداً ومستقراً
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
     
     try {
         const response = await fetch(url, {
@@ -65,11 +64,14 @@ async function callGeminiStream(promptText, onChunk) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { maxOutputTokens: 4096, temperature: 0.3 }
+                generationConfig: { maxOutputTokens: 2048, temperature: 0.3 }
             })
         });
 
-        if (!response.ok) throw new Error("تعذر الاتصال بالخدمة.");
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `خطأ في الاتصال بالخدمة (${response.status})`);
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
@@ -143,7 +145,7 @@ if (analyzeProjectBtn) {
             saveChatToHistory(idea, result);
             renderResponseWithTools(result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء الاتصال.</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'حدث خطأ أثناء الاتصال.'}</p>`;
         }
     };
 }
@@ -162,7 +164,7 @@ if (btnCalculator) {
             saveChatToHistory(`ميزانية: ${idea}`, result);
             renderResponseWithTools(result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'خطأ في الاتصال'}</p>`;
         }
     };
 }
@@ -181,7 +183,7 @@ if (btnDbGenerator) {
             saveChatToHistory(`Schema: ${idea}`, result);
             renderResponseWithTools(result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'خطأ في الاتصال'}</p>`;
         }
     };
 }
@@ -225,7 +227,7 @@ if (btnCodeTranslator) {
                 saveChatToHistory(`تحويل كود لـ ${lang}`, result);
                 renderResponseWithTools(result);
             } catch (err) {
-                modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التحويل.</p>`;
+                modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'حدث خطأ أثناء التحويل.'}</p>`;
             }
         };
 
@@ -247,7 +249,7 @@ if (btnCodeTranslator) {
                 saveChatToHistory(`طلب كود: ${request.slice(0, 15)}...`, result);
                 renderResponseWithTools(result);
             } catch (err) {
-                modalBody.innerHTML = `<p style="color:#ef4444;">❌ حدث خطأ أثناء التوليد.</p>`;
+                modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'حدث خطأ أثناء التوليد.'}</p>`;
             }
         };
     };
@@ -408,7 +410,7 @@ if (searchBtn) {
             saveChatToHistory(query, result);
             renderResponseWithTools(result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444;">❌ خطأ في الاتصال</p>`;
+            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">❌ ${err.message || 'خطأ في الاتصال'}</p>`;
         }
     };
 }
