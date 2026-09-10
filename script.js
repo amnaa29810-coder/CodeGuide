@@ -53,20 +53,24 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API مع تجربة الموديلات المتاحة تلقائياً
+// 3. الاتصال بـ Gemini API مع تجربة الموديلات والإصدارات المتاحة
 async function callGeminiStream(promptText, onChunk) {
-    const models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    // تجربات العناوين والموديلات المتوافقة
+    const endpoints = [
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`
+    ];
+    
     let lastError = null;
 
-    for (const modelName of models) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-        
+    for (const url of endpoints) {
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { 
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": GEMINI_API_KEY
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: promptText }] }]
@@ -83,6 +87,7 @@ async function callGeminiStream(promptText, onChunk) {
             const errData = await response.json().catch(() => ({}));
             lastError = errData.error?.message || `خطأ (${response.status})`;
             
+            // في حالة عدم توفر الموديل جرب اللي بعده
             if (response.status === 404) continue;
             
             if (response.status === 429) {
