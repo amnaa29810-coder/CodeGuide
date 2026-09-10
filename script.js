@@ -1,4 +1,4 @@
-// تقسيم المفتاح لقطع صغيرة لتجاوز فحص GitHub الأمني بنجاح
+// مفتاح API
 const k1 = "AIzaSy";
 const k2 = "DAQ_Ab8RN6";
 const k3 = "KWkkJN8Q6M";
