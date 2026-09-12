@@ -1,6 +1,3 @@
-// ==========================================
-// إدارة سجل البحث والمشاهدات المحلية
-// ==========================================
 let searchHistory = JSON.parse(localStorage.getItem("app_history") || "[]");
 
 function addToHistory(type, title) {
@@ -10,9 +7,6 @@ function addToHistory(type, title) {
     localStorage.setItem("app_history", JSON.stringify(searchHistory));
 }
 
-// ==========================================
-// عناصر الواجهة والتحكم بالنافذة
-// ==========================================
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -50,121 +44,94 @@ window.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden");
 function formatMarkdown(text) {
     if (!text) return "";
     return text
-        .replace(/### (.*?)\n/g, '<strong style="color:#2563eb; font-size:15px; display:block; margin-top:8px;">$1</strong>')
+        .replace(/### (.*?)\n/g, '<strong style="color:#2563eb; font-size:14px; display:block; margin-top:8px;">$1</strong>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>');
 }
 
-// ==========================================
-// محاكي إجابات الذكاء الاصطناعي مع الحفظ
-// ==========================================
-function processLocalAI(promptType, inputData, extraParam = "") {
-    let result = "";
-    if (promptType === "translate") {
-        const targetLang = extraParam || "Java";
-        result = `### 🔄 تحويل الكود إلى (${targetLang}):\n\n\`\`\`${targetLang.toLowerCase()}\n// الكود المحول لـ ${targetLang}\npublic class Main {\n    public static void main(String[] args) {\n        // ${inputData}\n    }\n}\n\`\`\``;
-        addToHistory("تحويل كود", `${inputData.substring(0, 15)}... ➔ ${targetLang}`);
-    } else if (promptType === "generate") {
-        const lang = extraParam || "JavaScript";
-        result = `### ✨ كود توليد آلي (${lang}):\n\n\`\`\`${lang.toLowerCase()}\n// الطلب: ${inputData}\nfunction startProcess() {\n    console.log("تم التنفيذ بنجاح");\n}\n\`\`\``;
-        addToHistory("توليد كود", `${inputData.substring(0, 15)}... (${lang})`);
-    } else if (promptType === "analyze") {
-        result = `### 💡 تحليل فكرة: ${inputData}\n- **التقنيات:** HTML, CSS, JS, Node.js, Database\n- **الخطة:** إعداد قاعدة البيانات -> برمجة الواجهة -> الربط بـ API.`;
-        addToHistory("تحليل مشروع", inputData.substring(0, 20));
-    } else if (promptType === "budget") {
-        result = `### 💰 ميزانية ووقت: ${inputData}\n- **الوقت التقديري:** 2 إلى 4 أسابيع\n- **التكلفة المعتادة:** $200 - $500`;
-        addToHistory("تقدير ميزانية", inputData.substring(0, 20));
-    } else if (promptType === "database") {
-        result = `### 🗄️ قواعد بيانات: ${inputData}\n- **جدول المستخدمين:** id, name, email\n- **جدول العمليات:** id, user_id, details, created_at`;
-        addToHistory("قواعد بيانات", inputData.substring(0, 20));
-    } else {
-        result = `### 🔍 نتيجة البحث عن: ${inputData}\nتعتبر هذه التقنية من الأساسيات المهمة لمجال البرمجة والتطوير.`;
-        addToHistory("بحث سريع", inputData);
-    }
-
-    modalBody.innerHTML = `
-        <div style="padding:5px; text-align:right;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; line-height:1.6; color:#1e293b;">
-                ${formatMarkdown(result)}
-            </div>
-            <button id="copy-btn" style="width:100%; margin-top:10px; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ النتيجة</button>
-        </div>
-    `;
-
-    document.getElementById("copy-btn").onclick = () => {
-        navigator.clipboard.writeText(result).then(() => alert("تم النسخ بنجاح!"));
-    };
-}
-
-// ==========================================
-// نافذة الموسوعات مع خيار البحث الداخلي
-// ==========================================
-function renderSearchableList(title, itemsList) {
-    const contentHtml = `
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" id="inner-search" placeholder="🔍 ابحث هنا داخل المجموعات..." style="padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
-            <div id="inner-list-container" style="display:flex; flex-direction:column; gap:8px;">
-                ${generateItemsHtml(itemsList)}
-            </div>
-        </div>
-    `;
-    showModal(title, contentHtml);
-
-    document.getElementById("inner-search").oninput = (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = itemsList.filter(item => 
-            (item.name && item.name.toLowerCase().includes(query)) ||
-            (item.desc && item.desc.toLowerCase().includes(query)) ||
-            (item.title && item.title.toLowerCase().includes(query))
-        );
-        document.getElementById("inner-list-container").innerHTML = generateItemsHtml(filtered);
-    };
-}
-
-function generateItemsHtml(items) {
-    if(!items.length) return `<div style="text-align:center; color:#94a3b8; padding:10px;">لا توجد نتائج مطابقة</div>`;
-    return items.map(item => {
-        if(item.languages) {
-            return `
-                <div style="margin-bottom:8px;">
-                    <strong style="color:#2563eb; font-size:13px; display:block; margin-bottom:4px;">${item.title}</strong>
-                    ${item.languages.map(l => `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; margin-bottom:4px; font-size:12px;"><strong>${l.name}:</strong> ${l.desc}</div>`).join('')}
+// دالة عرض النتيجة ومرفق معها حقل الاستفسار والأسئلة الإضافية
+function renderResultWithFollowUp(title, initialText, typeLabel) {
+    addToHistory(typeLabel, title);
+    
+    const renderContent = (text) => {
+        modalBody.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:10px; text-align:right;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:10px; font-size:13px; line-height:1.6; max-height:260px; overflow-y:auto; color:#1e293b;">
+                    ${formatMarkdown(text)}
                 </div>
-            `;
-        }
-        return `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; font-size:12px;"><strong>${item.name}:</strong> ${item.desc}</div>`;
-    }).join('');
+                
+                <div style="border-top:1px solid #f1f5f9; padding-top:10px; margin-top:4px;">
+                    <label style="font-size:12px; font-weight:bold; color:#64748b; margin-bottom:6px; display:block;">💬 هل لديك استفسار حول هذه الإجابة؟</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="follow-up-input" placeholder="اكتب استفسارك هنا..." style="flex:1; padding:8px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px;">
+                        <button id="follow-up-btn" style="background:#2563eb; color:white; border:none; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">إرسال</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById("follow-up-btn").onclick = () => {
+            const query = document.getElementById("follow-up-input").value.trim();
+            if (!query) return;
+            const updatedText = text + `\n\n### ❓ استفسارك: ${query}\n- **الإجابة:** بناءً على استفسارك، يتم تطبيق المفهوم عبر التأكد من ضبط المتغيرات وقواعد الربط بشكل صحيح.`;
+            renderContent(updatedText);
+        };
+    };
+
+    showModal(title, "");
+    renderContent(initialText);
+}
+
+// عرض الخرائط مع صندوق الاستفسار والبحث الخاص بها
+function showRoadmapWithSearch(title, roadmapData, typeLabel) {
+    addToHistory(typeLabel, title);
+    
+    const renderRoadmap = (dataText) => {
+        modalBody.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:10px; text-align:right;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:8px;">
+                    <input type="text" id="roadmap-query" placeholder="🔍 اسأل عن أي خطوة في هذه الخريطة..." style="width:100%; padding:8px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <button id="roadmap-ask-btn" style="width:100%; margin-top:6px; background:#10b981; color:white; border:none; padding:8px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">اسأل حول الخريطة</button>
+                </div>
+
+                <div id="roadmap-content" style="background:#ffffff; border:1px solid #e2e8f0; padding:12px; border-radius:10px; font-size:13px; line-height:1.6; max-height:260px; overflow-y:auto; color:#1e293b;">
+                    ${formatMarkdown(dataText)}
+                </div>
+            </div>
+        `;
+
+        document.getElementById("roadmap-ask-btn").onclick = () => {
+            const q = document.getElementById("roadmap-query").value.trim();
+            if(!q) return;
+            const newContent = dataText + `\n\n### 💡 توضيح خاص بـ (${q}):\nتتطلب هذه الخطوة التركيز على التطبيق العملي والمشاريع الصغيرة لترسيخ المفاهيم.`;
+            renderRoadmap(newContent);
+        };
+    };
+
+    showModal(title, "");
+    renderRoadmap(roadmapData);
 }
 
 // ==========================================
-// ربط الأحداث والأزرار
+// الأزرار والعمليات
 // ==========================================
 if (btnCodeTranslator) {
     btnCodeTranslator.onclick = () => {
-        showModal("🔄 مترجم ومولد لغات البرمجة", `
+        showModal("🔄 مترجم لغات البرمجة", `
             <div style="display:flex; flex-direction:column; gap:10px; text-align:right;">
-                <label style="font-weight:bold; font-size:13px; color:#334155;">ادخلي الكود أو اطلبي كوداً جديداً:</label>
-                <textarea id="translator-input" placeholder="مثال: print('Hello') أو اكتب كود حاسبة بـ Python" style="width:100%; height:80px; padding:10px; border:1px solid #cbd5e1; border-radius:8px; background:#f8fafc; font-size:12px; resize:none;"></textarea>
-                <input type="text" id="target-language" placeholder="اللغة المطلوبة (مثال: Java, C++, Python)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px;">
-                <div style="display:flex; gap:8px;">
-                    <button id="exec-convert-btn" style="flex:1; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">🔄 تحويل الكود</button>
-                    <button id="exec-generate-btn" style="flex:1; padding:10px; background:#10b981; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">✨ توليد كود جديد</button>
-                </div>
+                <textarea id="translator-input" placeholder="اكتب الكود للتحويل أو اطلب كوداً جديداً..." style="width:100%; height:75px; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; resize:none;"></textarea>
+                <input type="text" id="target-language" placeholder="اللغة المطلوبة (مثل: Java, Python)" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px;">
+                <button id="exec-btn" style="padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:12px;">تنفيذ الطلب</button>
             </div>
         `);
 
-        document.getElementById("exec-convert-btn").onclick = () => {
+        document.getElementById("exec-btn").onclick = () => {
             const code = document.getElementById("translator-input").value.trim();
-            const lang = document.getElementById("target-language").value.trim();
-            if (!code) return alert("اكتبي الكود أولاً!");
-            processLocalAI("translate", code, lang);
-        };
-
-        document.getElementById("exec-generate-btn").onclick = () => {
-            const promptReq = document.getElementById("translator-input").value.trim();
-            const lang = document.getElementById("target-language").value.trim();
-            if (!promptReq) return alert("اكتبي وصف الكود أولاً!");
-            processLocalAI("generate", promptReq, lang);
+            const lang = document.getElementById("target-language").value.trim() || "Java";
+            if (!code) return alert("اكتب الكود أو الطلب أولاً!");
+            
+            const res = `### 🔄 النتيجة بـ (${lang}):\n\`\`\`${lang.toLowerCase()}\n// تنفيذ الكود المطلوب\nconsole.log("${code}");\n\`\`\``;
+            renderResultWithFollowUp(`ترجمة/توليد إلى ${lang}`, res, "تحويل كود");
         };
     };
 }
@@ -172,53 +139,70 @@ if (btnCodeTranslator) {
 if (analyzeProjectBtn) analyzeProjectBtn.onclick = () => {
     const val = projectIdea ? projectIdea.value.trim() : "";
     if (!val) return alert("اكتبي الفكرة أولاً!");
-    showModal("💡 تحليل الفكرة", ""); processLocalAI("analyze", val);
+    renderResultWithFollowUp("💡 تحليل الفكرة", `### تحليل فكرة: ${val}\n- **التقنيات المقترحة:** HTML/CSS, JS, Node.js\n- **قواعد البيانات:** PostgreSQL\n- **الخطوات:** تصميم الواجهات ثم إعداد السيرفر.`, "تحليل مشروع");
 };
 
 if (btnCalculator) btnCalculator.onclick = () => {
     const val = projectIdea ? projectIdea.value.trim() : "";
     if (!val) return alert("اكتبي الفكرة أولاً!");
-    showModal("💰 الميزانية والوقت", ""); processLocalAI("budget", val);
+    renderResultWithFollowUp("💰 الميزانية والوقت", `### تقدير المشروع: ${val}\n- **الوقت المتوقع:** 3 أسابيع\n- **الميزانية التقديرية:** 250$ - 400$`, "الميزانية والوقت");
 };
 
 if (btnDbGenerator) btnDbGenerator.onclick = () => {
     const val = projectIdea ? projectIdea.value.trim() : "";
     if (!val) return alert("اكتبي الفكرة أولاً!");
-    showModal("🗄️ قواعد البيانات", ""); processLocalAI("database", val);
+    renderResultWithFollowUp("🗄️ قواعد البيانات", `### تصميم البيانات لـ: ${val}\n- **جدول المستخدمين:** id, name, email\n- **جدول الطلبات:** id, user_id, status`, "قواعد البيانات");
 };
 
 if (searchBtn) searchBtn.onclick = () => {
     const val = searchInput ? searchInput.value.trim() : "";
     if (!val) return;
-    showModal("🔍 نتيجة البحث", ""); processLocalAI("search", val);
+    renderResultWithFollowUp("🔍 نتيجة البحث", `### نتيجة البحث عن: ${val}\nتعتبر هذه التقنية أساسية ومهمة للبدء في تطوير التطبيقات الحديثة.`, "بحث سريع");
 };
 
-// تشغيل القواميس مع البحث الداخلي
-if (btnLanguages) btnLanguages.onclick = () => renderSearchableList("💻 لغات البرمجة", programmingCategories);
-if (btnTools) btnTools.onclick = () => renderSearchableList("🛠️ الأدوات والتقنيات", devTools);
-if (btnIdeApps) btnIdeApps.onclick = () => renderSearchableList("📱 تطبيقات ومحررات الكود", executionApps);
-if (btnGlossarySidebar) btnGlossarySidebar.onclick = () => renderSearchableList("📖 قاموس المصطلحات", techGlossary);
+// الموسوعات القادمة من data.js
+if (btnLanguages) btnLanguages.onclick = () => {
+    let html = '<div style="display:flex; flex-direction:column; gap:8px; text-align:right;">';
+    programmingCategories.forEach(c => {
+        html += `<strong style="color:#2563eb; font-size:13px;">${c.title}</strong>`;
+        c.languages.forEach(l => html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; font-size:12px;"><strong>${l.name}:</strong> ${l.desc}</div>`);
+    });
+    showModal("💻 لغات البرمجة", html + '</div>');
+};
 
-// زر عرض سجل البحث
+if (btnTools) btnTools.onclick = () => {
+    let html = '<div style="display:flex; flex-direction:column; gap:8px; text-align:right;">';
+    devTools.forEach(t => html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; font-size:12px;"><strong>${t.name}:</strong> ${t.desc}</div>`);
+    showModal("🛠️ الأدوات والتقنيات", html + '</div>');
+};
+
+if (btnIdeApps) btnIdeApps.onclick = () => {
+    let html = '<div style="display:flex; flex-direction:column; gap:8px; text-align:right;">';
+    executionApps.forEach(a => html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; font-size:12px;"><strong>${a.name}:</strong> ${a.desc}</div>`);
+    showModal("📱 تطبيقات الكود", html + '</div>');
+};
+
+if (btnGlossarySidebar) btnGlossarySidebar.onclick = () => {
+    let html = '<div style="display:flex; flex-direction:column; gap:8px; text-align:right;">';
+    techGlossary.forEach(g => html += `<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; font-size:12px;"><strong>${g.name}:</strong> ${g.desc}</div>`);
+    showModal("📖 قاموس المصطلحات", html + '</div>');
+};
+
+// سجل البحث الأسود
 if (btnHistory) {
     btnHistory.onclick = () => {
-        if (!searchHistory.length) {
-            showModal("🕒 سجل البحث", "<p style='text-align:center; color:#94a3b8;'>السجل فارغ حالياً.</p>");
-            return;
-        }
+        if (!searchHistory.length) return showModal("≡ السجل", "<p style='text-align:center; color:#94a3b8; font-size:13px;'>السجل فارغ حالياً.</p>");
         const html = searchHistory.map(h => `
-            <div class="history-item">
-                <div style="display:flex; justify-content:space-between; color:#64748b; font-size:11px; margin-bottom:2px;">
-                    <span>${h.type}</span>
-                    <span>${h.time}</span>
-                </div>
-                <strong style="color:#0f172a;">${h.title}</strong>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px; border-radius:6px; margin-bottom:6px; text-align:right; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; color:#64748b; font-size:10px;"><span>${h.type}</span><span>${h.time}</span></div>
+                <strong>${h.title}</strong>
             </div>
         `).join('');
-        showModal("🕒 سجل البحث والعمليات", html);
+        showModal("≡ سجل العمليات", html);
     };
 }
 
-if (btnRoadmapWeb) btnRoadmapWeb.onclick = () => { showModal("🌐 تطوير الويب", formatMarkdown(roadmapsData.web)); addToHistory("خريطة طريق", "تطوير الويب"); };
-if (btnRoadmapMobile) btnRoadmapMobile.onclick = () => { showModal("📱 تطوير التطبيقات", formatMarkdown(roadmapsData.mobile)); addToHistory("خريطة طريق", "تطوير التطبيقات"); };
-if (btnRoadmapAi) btnRoadmapAi.onclick = () => { showModal("🤖 الذكاء الاصطناعي", formatMarkdown(roadmapsData.ai)); addToHistory("خريطة طريق", "الذكاء الاصطناعي"); };
+// خرائط الطريق المزودة بمربع بحث
+if (btnRoadmapWeb) btnRoadmapWeb.onclick = () => showRoadmapWithSearch("🌐 تطوير الويب", roadmapsData.web, "خريطة طريق");
+if (btnRoadmapMobile) btnRoadmapMobile.onclick = () => showRoadmapWithSearch("📱 تطوير التطبيقات", roadmapsData.mobile, "خريطة طريق");
+if (btnRoadmapAi) btnRoadmapAi.onclick = () => showRoadmapWithSearch("🤖 الذكاء الاصطناعي", roadmapsData.ai, "خريطة طريق");
