@@ -3,45 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة المبرمج الذكية Pro</title>
+    <title>تطبيق المبرمج</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --primary-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
-            --accent-green: linear-gradient(135deg, #10b981, #059669);
-            --bg-color: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px 12px;
-            max-width: 500px;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            padding: 16px;
+            max-width: 480px;
             margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 70px;
         }
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .btn-pill {
-            background: var(--accent-green);
+        /* زر قاموس المصطلحات الأخضر في الأعلى */
+        .fixed-glossary-btn {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            background-color: #10b981;
             color: white;
             border: none;
             padding: 8px 16px;
@@ -49,26 +36,45 @@
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        /* زر السجل الأسود العائم في الأسفل */
+        .fixed-history-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #0f172a;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 16px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
             margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
         }
 
         .section-title {
             font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            text-align: center;
+            color: #1e293b;
         }
 
         .search-box {
@@ -79,35 +85,34 @@
         input[type="text"], textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 13px;
             outline: none;
-            background: #f8fafc;
-            transition: border 0.2s;
+            background: #ffffff;
+            color: #334155;
+            text-align: right;
         }
 
         input[type="text"]:focus, textarea:focus {
-            border-color: var(--primary);
-            background: #fff;
+            border-color: #2563eb;
         }
 
         .input-area {
-            height: 75px;
+            height: 80px;
             resize: none;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
-        .btn-main {
-            background: var(--primary-gradient);
+        .btn-blue {
+            background: #2563eb;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             font-size: 13px;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
 
         .btn-list {
@@ -116,45 +121,44 @@
             gap: 10px;
         }
 
-        .btn-card {
+        .btn-white {
             background: #ffffff;
             color: #334155;
-            border: 1px solid var(--border-color);
-            text-align: right;
-            padding: 12px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
             cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: all 0.2s;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .btn-card:hover {
-            border-color: var(--primary);
-            color: var(--primary);
+        .btn-white:active {
             background: #f8fafc;
         }
 
+        /* النافذة المنبثقة */
         .modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.4);
             display: flex; align-items: center; justify-content: center;
-            padding: 15px; z-index: 1000;
+            padding: 16px; z-index: 1000;
         }
 
         .modal.hidden { display: none; }
 
         .modal-content {
             background: white;
-            width: 100%; max-width: 480px;
-            border-radius: var(--radius);
+            width: 100%; max-width: 440px;
+            border-radius: 16px;
             padding: 18px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             max-height: 85vh;
             display: flex;
             flex-direction: column;
@@ -162,41 +166,31 @@
 
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px; border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            margin-bottom: 12px; border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 8px;
         }
 
-        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
 
         .modal-body-scroll {
             overflow-y: auto;
-            max-height: 60vh;
-            padding-left: 4px;
-        }
-
-        .history-item {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 12px;
+            max-height: 65vh;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-top">
-        <button id="btn-history" class="btn-pill" style="background:#64748b;">🕒 سجل البحث</button>
-        <button id="btn-glossary-sidebar" class="btn-pill">📖 قاموس المصطلحات</button>
-    </div>
+    <button id="btn-glossary-sidebar" class="fixed-glossary-btn">📖 قاموس المصطلحات</button>
+    <button id="btn-history" class="fixed-history-btn">≡ السجل</button>
+
+    <div style="height: 30px;"></div>
 
     <!-- البحث السريع -->
     <div class="card">
         <div class="section-title">🔍 البحث السريع</div>
         <div class="search-box">
             <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
-            <button id="search-btn" class="btn-main" style="width: 80px;">بحث</button>
+            <button id="search-btn" class="btn-blue">بحث</button>
         </div>
     </div>
 
@@ -204,9 +198,9 @@
     <div class="card">
         <div class="section-title">📚 الموسوعات البرمجية</div>
         <div class="btn-list">
-            <button id="btn-languages" class="btn-card">💻 لغات البرمجة <span>←</span></button>
-            <button id="btn-tools" class="btn-card">🛠️ الأدوات والتقنيات <span>←</span></button>
-            <button id="btn-ide-apps" class="btn-card">📱 تطبيقات ومحررات الكود <span>←</span></button>
+            <button id="btn-languages" class="btn-white">💻 لغات البرمجة</button>
+            <button id="btn-tools" class="btn-white">🛠️ الأدوات والتقنيات</button>
+            <button id="btn-ide-apps" class="btn-white">📱 تطبيقات ومحررات الكود</button>
         </div>
     </div>
 
@@ -215,10 +209,10 @@
         <div class="section-title">🚀 أدوات وتخطيط المشاريع</div>
         <textarea id="project-idea" class="input-area" placeholder="اكتب فكرة مشروعك هنا..."></textarea>
         <div class="btn-list">
-            <button id="analyze-project-btn" class="btn-card">💡 تحليل الفكرة والتقنيات <span>←</span></button>
-            <button id="btn-calculator" class="btn-card">💰 الميزانية والوقت <span>←</span></button>
-            <button id="btn-db-generator" class="btn-card">🗄️ هيكل قواعد البيانات <span>←</span></button>
-            <button id="btn-code-translator" class="btn-card">🔄 مترجم ومولد لغات البرمجة <span>←</span></button>
+            <button id="analyze-project-btn" class="btn-white">💡 تحليل الفكرة والتقنيات</button>
+            <button id="btn-calculator" class="btn-white">💰 الميزانية والوقت</button>
+            <button id="btn-db-generator" class="btn-white">🗄️ هيكل قواعد البيانات</button>
+            <button id="btn-code-translator" class="btn-white">🔄 مترجم لغات البرمجة</button>
         </div>
     </div>
 
@@ -226,22 +220,20 @@
     <div class="card">
         <div class="section-title">🗺️ خرائط طريق المبرمج (Roadmaps)</div>
         <div class="btn-list">
-            <button id="btn-roadmap-web" class="btn-card">🌐 تطوير الويب <span>←</span></button>
-            <button id="btn-roadmap-mobile" class="btn-card">📱 تطوير التطبيقات <span>←</span></button>
-            <button id="btn-roadmap-ai" class="btn-card">🤖 الذكاء الاصطناعي <span>←</span></button>
+            <button id="btn-roadmap-web" class="btn-white">🌐 تطوير الويب</button>
+            <button id="btn-roadmap-mobile" class="btn-white">📱 تطوير التطبيقات</button>
+            <button id="btn-roadmap-ai" class="btn-white">🤖 الذكاء الاصطناعي</button>
         </div>
     </div>
 
-    <!-- النافذة المنبثقة -->
+    <!-- Modal النافذة -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-title" style="font-size: 15px; color:#0f172a;">عنوان النافذة</h3>
+                <h3 id="modal-title" style="font-size: 15px;">عنوان النافذة</h3>
                 <button id="close-modal" class="close-btn">&times;</button>
             </div>
-            <div id="modal-body" class="modal-body-scroll">
-                <!-- المحتوى الديناميكي -->
-            </div>
+            <div id="modal-body" class="modal-body-scroll"></div>
         </div>
     </div>
 
