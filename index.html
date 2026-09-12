@@ -3,60 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موسوعة الأدوات والتحليل السريع للمشاريع</title>
-    <link rel="stylesheet" href="style.css">
+    <title>منصة المبرمج الذكية</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .btn-top {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-box input, .input-area {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        .input-area {
+            width: 100%;
+            height: 70px;
+            resize: none;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid var(--border-color);
+            text-align: right;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            z-index: 1000;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header-card">
-            <button id="btn-glossary-sidebar" class="btn-green">📖 قاموس المصطلحات</button>
-            <div class="search-title">🔍 البحث السريع</div>
-            <div class="search-row">
-                <button id="search-btn" class="btn-blue">بحث</button>
-                <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية..." autocomplete="off">
-            </div>
-        </div>
+    <!-- القاموس السريع العلوي -->
+    <div class="header-top">
+        <button id="btn-glossary-sidebar" class="btn-top">📖 قاموس المصطلحات</button>
+    </div>
 
-        <div class="section-card">
-            <div class="section-header">
-                <h3>📚 الموسوعات البرمجية</h3>
-            </div>
-            <button id="btn-languages" class="item-btn">💻 لغات البرمجة</button>
-            <button id="btn-tools" class="item-btn">🛠️ الأدوات والتقنيات</button>
-            <button id="btn-ide-apps" class="item-btn">📱 تطبيقات ومحررات الكود</button>
-        </div>
-
-        <div class="section-card">
-            <div class="section-header">
-                <h3>🚀 أدوات وتخطيط المشاريع</h3>
-            </div>
-            <textarea id="project-idea" placeholder="اكتب فكرة مشروعك هنا..." autocomplete="off"></textarea>
-            
-            <button id="analyze-project-btn" class="item-btn">💡 تحليل الفكرة والتقنيات</button>
-            <button id="btn-calculator" class="item-btn">💰 الميزانية والوقت</button>
-            <button id="btn-db-generator" class="item-btn">🗄️ هيكل قواعد البيانات</button>
-            <button id="btn-code-translator" class="item-btn">🔄 مترجم لغات البرمجة</button>
-        </div>
-
-        <div class="section-card">
-            <div class="section-header">
-                <h3>🗺️ خرائط طريق المبرمج (Roadmaps)</h3>
-            </div>
-            <button id="btn-roadmap-web" class="item-btn">🌐 تطوير الويب</button>
-            <button id="btn-roadmap-mobile" class="item-btn">📱 تطوير التطبيقات</button>
-            <button id="btn-roadmap-ai" class="item-btn">🤖 الذكاء الاصطناعي</button>
+    <!-- البحث السريع -->
+    <div class="card">
+        <div class="section-title">🔍 البحث السريع</div>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
+            <button id="search-btn" class="btn" style="width: auto;">بحث</button>
         </div>
     </div>
 
+    <!-- الموسوعات البرمجية -->
+    <div class="card">
+        <div class="section-title">📚 الموسوعات البرمجية</div>
+        <div class="btn-list">
+            <button id="btn-languages" class="btn-secondary">💻 لغات البرمجة</button>
+            <button id="btn-tools" class="btn-secondary">🛠️ الأدوات والتقنيات</button>
+            <button id="btn-ide-apps" class="btn-secondary">📱 تطبيقات ومحررات الكود</button>
+        </div>
+    </div>
+
+    <!-- أدوات وتخطيط المشاريع -->
+    <div class="card">
+        <div class="section-title">🚀 أدوات وتخطيط المشاريع</div>
+        <textarea id="project-idea" class="input-area" placeholder="اكتب فكرة مشروعك هنا..."></textarea>
+        <div class="btn-list">
+            <button id="analyze-project-btn" class="btn-secondary">💡 تحليل الفكرة والتقنيات</button>
+            <button id="btn-calculator" class="btn-secondary">💰 الميزانية والوقت</button>
+            <button id="btn-db-generator" class="btn-secondary">🗄️ هيكل قواعد البيانات</button>
+            <button id="btn-code-translator" class="btn-secondary">🔄 مترجم لغات البرمجة</button>
+        </div>
+    </div>
+
+    <!-- خرائط طريق المبرمج -->
+    <div class="card">
+        <div class="section-title">🗺️ خرائط طريق المبرمج (Roadmaps)</div>
+        <div class="btn-list">
+            <button id="btn-roadmap-web" class="btn-secondary">🌐 تطوير الويب</button>
+            <button id="btn-roadmap-mobile" class="btn-secondary">📱 تطوير التطبيقات</button>
+            <button id="btn-roadmap-ai" class="btn-secondary">🤖 الذكاء الاصطناعي</button>
+        </div>
+    </div>
+
+    <!-- النافذة المنبثقة (Modal) -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
-            <span id="close-modal" class="close-btn">&times;</span>
-            <h2 id="modal-title">العنوان</h2>
-            <div id="modal-body"></div>
+            <div class="modal-header">
+                <h3 id="modal-title" style="font-size: 15px;">عنوان النافذة</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- المحتوى الديناميكي -->
+            </div>
         </div>
     </div>
 
+    <!-- استدعات الملف البرمجي الوحيد -->
     <script src="script.js"></script>
 </body>
 </html>
