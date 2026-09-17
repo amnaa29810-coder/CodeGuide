@@ -53,9 +53,9 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API مع النماذج الحديثة المباشرة
+// 3. الاتصال بـ Gemini API مع النموذج الحديث المطلوب (gemini-3.6-flash)
 async function callGeminiStream(promptText, onChunk) {
-    const models = ["gemini-2.5-flash", "gemini-2.0-flash"];
+    const models = ["gemini-3.6-flash"];
     let lastError = null;
 
     for (const model of models) {
