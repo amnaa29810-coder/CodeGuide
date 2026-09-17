@@ -26,7 +26,80 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// 2. إدارة النافذة المنبثقة
+// 2. إدارة المفضلة (Favorites)
+function getFavorites() {
+    return JSON.parse(localStorage.getItem("appFavorites") || "[]");
+}
+
+function toggleFavorite(title, content) {
+    let favorites = getFavorites();
+    const index = favorites.findIndex(item => item.title === title);
+
+    if (index > -1) {
+        favorites.splice(index, 1);
+        alert("تمت الإزالة من المفضلة ⭐");
+    } else {
+        favorites.push({ title, content, date: new Date().toLocaleDateString("ar-EG") });
+        alert("تمت الإضافة إلى المفضلة ⭐");
+    }
+
+    localStorage.setItem("appFavorites", JSON.stringify(favorites));
+}
+
+function openFavoritesModal() {
+    const favorites = getFavorites();
+    if (favorites.length === 0) {
+        showModal("⭐ المفضلة", "<p style='text-align:center; padding:20px; color:#64748b;'>لا توجد عناصر محفوظة في المفضلة حالياً.</p>");
+        return;
+    }
+
+    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
+    favorites.forEach((item, index) => {
+        content += `
+            <div class="fav-item" data-index="${index}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; text-align:right;">
+                <div style="font-size:11px; color:#f59e0b; margin-bottom:4px;">⭐ ${item.date}</div>
+                <div style="font-weight:bold; color:#1e293b; font-size:13.5px;">${item.title}</div>
+            </div>
+        `;
+    });
+    content += `</div>`;
+
+    showModal("⭐ العناصر المفضلة", content);
+
+    document.querySelectorAll(".fav-item").forEach(el => {
+        el.onclick = () => {
+            const idx = el.getAttribute("data-index");
+            const selected = favorites[idx];
+            renderAIResponse(selected.title, selected.content);
+        };
+    });
+}
+
+// 3. إضافة زر المفضلة بجانب زر القاموس في الشمال
+function attachFavoriteButtonToSidebar() {
+    if (btnGlossarySidebar && !document.getElementById("btn-favorites-sidebar")) {
+        const favBtn = document.createElement("button");
+        favBtn.id = "btn-favorites-sidebar";
+        favBtn.innerHTML = "⭐ المفضلة";
+        favBtn.style.cssText = `
+            background: #f59e0b;
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            margin-right: 8px;
+        `;
+        
+        // وضع الزر بجانب زر قاموس المصطلحات مباشرة (على يساره)
+        btnGlossarySidebar.parentNode.insertBefore(favBtn, btnGlossarySidebar.nextSibling);
+        favBtn.onclick = openFavoritesModal;
+    }
+}
+
+// 4. إدارة النافذة المنبثقة
 function showModal(title, htmlContent) {
     if (!modalTitle || !modalBody || !modal) return;
     modalTitle.innerText = title;
@@ -53,7 +126,7 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API مع النموذج الحديث المطلوب (gemini-3.6-flash)
+// 5. الاتصال بـ Gemini API مع النموذج المطلوب gemini-3.6-flash
 async function callGeminiStream(promptText, onChunk) {
     const models = ["gemini-3.6-flash"];
     let lastError = null;
@@ -87,7 +160,7 @@ async function callGeminiStream(promptText, onChunk) {
     throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
 }
 
-// 4. عرض إجابة الذكاء الاصطناعي مع شريط اسأل متابعة وسجل المحادثة
+// 6. عرض إجابة الذكاء الاصطناعي مع زر نسخ وزر إضافة للمفضلة
 function renderAIResponse(title, rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const htmlContent = `
@@ -100,20 +173,31 @@ function renderAIResponse(title, rawText) {
             <input type="text" id="followup-input" placeholder="اسأل متابعة سريعة..." style="flex:1; border:none; background:transparent; font-size:13px; outline:none; text-align:right; padding:4px 8px;">
         </div>
 
-        <button id="copy-ai-response-btn" style="width:100%; padding:12px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer; box-shadow:0 3px 10px rgba(37, 99, 235, 0.25); display:flex; align-items:center; justify-content:center; gap:6px;">
-            📋 نسخ الإجابة
-        </button>
+        <div style="display:flex; gap:8px;">
+            <button id="fav-ai-response-btn" style="flex:1; padding:12px; background:#f59e0b; color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:13px; cursor:pointer;">
+                ⭐ المفضلة
+            </button>
+            <button id="copy-ai-response-btn" style="flex:1; padding:12px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:13px; cursor:pointer;">
+                📋 نسخ الإجابة
+            </button>
+        </div>
     `;
 
     showModal(title, htmlContent);
 
-    // نسخ الإجابة
+    // حدث زر نسخ الإجابة
     const copyBtn = document.getElementById("copy-ai-response-btn");
     if (copyBtn) {
         copyBtn.onclick = () => {
             const textToCopy = document.getElementById("ai-response-box").innerText;
             navigator.clipboard.writeText(textToCopy).then(() => alert("تم نسخ الإجابة بنجاح!"));
         };
+    }
+
+    // حدث زر المفضلة
+    const favBtn = document.getElementById("fav-ai-response-btn");
+    if (favBtn) {
+        favBtn.onclick = () => toggleFavorite(title, rawText);
     }
 
     // سؤال متابعة
@@ -148,7 +232,7 @@ function prepareFastModal(title) {
     `);
 }
 
-// 5. قسم أدوات وتخطيط المشاريع
+// 7. قسم أدوات وتخطيط المشاريع
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -197,7 +281,7 @@ if (btnDbGenerator) {
     };
 }
 
-// 6. مترجم الكود
+// 8. مترجم الكود
 if (btnCodeTranslator) {
     btnCodeTranslator.onclick = () => {
         const translatorHtml = `
@@ -252,7 +336,7 @@ if (btnCodeTranslator) {
     };
 }
 
-// 7. موسوعة أقسام لغات البرمجة
+// 9. موسوعة أقسام لغات البرمجة
 if (btnLanguages) {
     btnLanguages.onclick = () => {
         if (typeof programmingCategories === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -317,7 +401,7 @@ function showCategoryLanguages(category) {
     document.getElementById("lang-internal-search").oninput = (e) => renderLangs(e.target.value);
 }
 
-// 8. قاموس مصطلحات المطورين مع زر نسخ المصطلح
+// 10. قاموس مصطلحات المطورين
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
         if (typeof techGlossary === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -339,7 +423,7 @@ if (btnGlossarySidebar) {
                 return;
             }
 
-            container.innerHTML = filtered.map((item, index) => `
+            container.innerHTML = filtered.map((item) => `
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px; text-align:center; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
                     <h4 style="color:#059669; font-size:15px; font-weight:bold; margin-bottom:8px;">📌 ${item.name}</h4>
                     <p style="color:#475569; font-size:12.5px; line-height:1.6; margin-bottom:12px; text-align:right;">${formatMarkdown(item.desc)}</p>
@@ -362,7 +446,7 @@ if (btnGlossarySidebar) {
     };
 }
 
-// 9. الأدوات وتطبيقات الكود
+// 11. الأدوات وتطبيقات الكود
 if (btnTools) {
     btnTools.onclick = () => {
         if (typeof devTools === 'undefined') return;
@@ -407,7 +491,7 @@ function showGlossaryStyleModal(title, dataList) {
     document.getElementById("generic-search-input").oninput = (e) => renderList(e.target.value);
 }
 
-// 10. خرائط الطريق (Roadmaps)
+// 12. خرائط الطريق (Roadmaps)
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
@@ -429,7 +513,7 @@ if (btnRoadmapAi) {
     };
 }
 
-// 11. البحث العلوي والسجل
+// 13. البحث العلوي والسجل
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput ? searchInput.value.trim() : "";
@@ -501,4 +585,8 @@ function saveChatToHistory(question, answer) {
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-document.addEventListener("DOMContentLoaded", createHistorySidebar);
+// تشغيل وتهيئة العناصر بعد تحميل الصفحة
+document.addEventListener("DOMContentLoaded", () => {
+    createHistorySidebar();
+    attachFavoriteButtonToSidebar();
+});
