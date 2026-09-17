@@ -53,35 +53,38 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API باستخدام النقطة البرمجية المستقرة
+// 3. الاتصال بـ Gemini API مع نظام الحماية والبدائل التلقائية للموديلات
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }]
-            })
-        });
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"];
+    let lastError = null;
 
-        if (response.ok) {
-            const data = await response.json();
-            const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
-            if (onChunk) onChunk(fullText);
-            return fullText;
+    for (const model of models) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
+                if (onChunk) onChunk(fullText);
+                return fullText;
+            }
+
+            const errData = await response.json().catch(() => ({}));
+            lastError = errData.error?.message || `خطأ (${response.status})`;
+        } catch (err) {
+            lastError = err.message;
         }
-
-        const errData = await response.json().catch(() => ({}));
-        if (response.status === 429) {
-            throw new Error("⏳ وصلت للحد الأقصى من الطلبات السريعة! انتظر 30 ثانية وجرب تاني.");
-        }
-
-        throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
-    } catch (err) {
-        throw new Error(err.message || "تعذر الاتصال بـ Gemini API، يرجى المحاولة لاحقاً.");
     }
+
+    throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
 }
 
 // 4. عرض إجابة الذكاء الاصطناعي مع شريط اسأل متابعة وسجل المحادثة
