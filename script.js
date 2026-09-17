@@ -1,4 +1,4 @@
-// تشفير مفتاح الـ API الجديد لحمايته
+// تشفير مفتاح الـ API لحمايته
 const encodedKey = "QVEuQWI4Uk42THZRMnNQWHFyc192NnN1Vk5mc19wa3RLWllEdVQ2WElleDB3MjdoMnhra3c=";
 const GEMINI_API_KEY = atob(encodedKey).trim().replace(/\s+/g, '');
 
@@ -53,9 +53,9 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API مع نظام الحماية والبدائل التلقائية للموديلات
+// 3. الاتصال بـ Gemini API مع النماذج الحديثة المباشرة
 async function callGeminiStream(promptText, onChunk) {
-    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest"];
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash"];
     let lastError = null;
 
     for (const model of models) {
