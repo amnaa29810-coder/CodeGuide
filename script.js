@@ -1,5 +1,5 @@
 // تشفير مفتاح الـ API لحمايته
-const encodedKey = "QVEuQWI4Uk42SmJ5cVRvWW9WVjFkbGVycVA2WXNuSFMzM0t4MUM2R2ZKSGs3SzAtam5lR1E=";
+const encodedKey = "QVEuQWI4Uk42SmJ5cVRvWW9WVjFkbGVycVA2WXNuSFMzM3R4MUM2R2ZKSGs3SzAtam5lR1E=";
 const GEMINI_API_KEY = atob(encodedKey).trim().replace(/\s+/g, '');
 
 // 1. العناصر الأساسية
@@ -53,9 +53,10 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API المستقر v1beta
+// 3. الاتصال بـ Gemini API باستخدام نقطة النهاية المعتمدة المستقرة
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // تم تحديث اسم الموديل ليكون gemini-1.5-flash-latest لضمان التوافق التام مع API
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
         const response = await fetch(url, {
@@ -84,7 +85,7 @@ async function callGeminiStream(promptText, onChunk) {
     }
 }
 
-// 4. عرض إجابة الذكاء الاصطناعي مع شريط اسأل متابعة وسجل المحادثة (نفس الصورة 3)
+// 4. عرض إجابة الذكاء الاصطناعي مع شريط اسأل متابعة وسجل المحادثة
 function renderAIResponse(title, rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const htmlContent = `
@@ -249,7 +250,7 @@ if (btnCodeTranslator) {
     };
 }
 
-// 7. موسوعة أقسام لغات البرمجة (نفس تصميم الصورة 1)
+// 7. موسوعة أقسام لغات البرمجة
 if (btnLanguages) {
     btnLanguages.onclick = () => {
         if (typeof programmingCategories === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -314,7 +315,7 @@ function showCategoryLanguages(category) {
     document.getElementById("lang-internal-search").oninput = (e) => renderLangs(e.target.value);
 }
 
-// 8. قاموس مصطلحات المطورين مع زر نسخ المصطلح (نفس تصميم الصورة 2)
+// 8. قاموس مصطلحات المطورين مع زر نسخ المصطلح
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
         if (typeof techGlossary === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -404,7 +405,7 @@ function showGlossaryStyleModal(title, dataList) {
     document.getElementById("generic-search-input").oninput = (e) => renderList(e.target.value);
 }
 
-// 10. خرائط الطريق (Roadmaps) (نفس تصميم الصورة 3)
+// 10. خرائط الطريق (Roadmaps)
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
