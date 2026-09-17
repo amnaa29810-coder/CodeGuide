@@ -1,5 +1,5 @@
-// تشفير مفتاح الـ API لحمايته
-const encodedKey = "QVEuQWI4Uk42SmJ5cVRvWW9WVjFkbGVycVA2WXNuSFMzM3R4MUM2R2ZKSGs3SzAtam5lR1E=";
+// تشفير مفتاح الـ API الجديد لحمايته
+const encodedKey = "QVEuQWI4Uk42THZRMnNQWHFyc192NnN1Vk5mc19wa3RLWllEdVQ2WElleDB3MjdoMnhra3c=";
 const GEMINI_API_KEY = atob(encodedKey).trim().replace(/\s+/g, '');
 
 // 1. العناصر الأساسية
@@ -53,10 +53,9 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API باستخدام نقطة النهاية المعتمدة المستقرة
+// 3. الاتصال بـ Gemini API باستخدام النقطة البرمجية المستقرة
 async function callGeminiStream(promptText, onChunk) {
-    // تم تحديث اسم الموديل ليكون gemini-1.5-flash-latest لضمان التوافق التام مع API
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
         const response = await fetch(url, {
