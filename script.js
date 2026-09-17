@@ -2,7 +2,7 @@
 const encodedKey = "QVEuQWI4Uk42SmJ5cVRvWW9WVjFkbGVycVA2WXNuSFMzM0t4MUM2R2ZKSGs3SzAtam5lR1E=";
 const GEMINI_API_KEY = atob(encodedKey).trim().replace(/\s+/g, '');
 
-// 1. ربط الواجهة
+// 1. العناصر الأساسية
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -26,9 +26,9 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// 2. النافذة المنبثقة والتهيئة
+// 2. إدارة النافذة المنبثقة
 function showModal(title, htmlContent) {
-    if(!modalTitle || !modalBody || !modal) return;
+    if (!modalTitle || !modalBody || !modal) return;
     modalTitle.innerText = title;
     modalBody.innerHTML = htmlContent;
     modal.classList.remove("hidden");
@@ -53,16 +53,14 @@ function formatMarkdown(text) {
         .replace(/\n/g, '<br>');
 }
 
-// 3. الاتصال بـ Gemini API المباشر والمستقر
+// 3. الاتصال بـ Gemini API المستقر v1beta
 async function callGeminiStream(promptText, onChunk) {
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     try {
         const response = await fetch(url, {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }]
             })
@@ -71,12 +69,11 @@ async function callGeminiStream(promptText, onChunk) {
         if (response.ok) {
             const data = await response.json();
             const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
-            onChunk(fullText);
+            if (onChunk) onChunk(fullText);
             return fullText;
         }
 
         const errData = await response.json().catch(() => ({}));
-        
         if (response.status === 429) {
             throw new Error("⏳ وصلت للحد الأقصى من الطلبات السريعة! انتظر 30 ثانية وجرب تاني.");
         }
@@ -87,50 +84,80 @@ async function callGeminiStream(promptText, onChunk) {
     }
 }
 
-function prepareFastModal(title) {
-    showModal(title, `
-        <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">⚡ جاري التحميل...</div>
-        </div>
-    `);
-}
-
-function renderResponseWithTools(rawText) {
+// 4. عرض إجابة الذكاء الاصطناعي مع شريط اسأل متابعة وسجل المحادثة (نفس الصورة 3)
+function renderAIResponse(title, rawText) {
     const formattedHtml = formatMarkdown(rawText);
-    modalBody.innerHTML = `
-        <div style="padding:5px;">
-            <div id="response-text-content" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6; max-height:280px; overflow-y:auto; color:#1e293b; text-align:right;">
-                ${formattedHtml}
-            </div>
+    const htmlContent = `
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:12px; font-size:13.5px; color:#1e293b; line-height:1.7; text-align:right; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+            <div id="ai-response-box">${formattedHtml}</div>
         </div>
-        <button id="copy-response-btn" style="width:100%; margin-top:8px; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">📋 نسخ النتيجة</button>
+
+        <div style="display:flex; gap:8px; background:#f1f5f9; padding:6px; border-radius:12px; margin-bottom:10px; align-items:center;">
+            <button id="followup-send-btn" style="background:#2563eb; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;">إرسال</button>
+            <input type="text" id="followup-input" placeholder="اسأل متابعة سريعة..." style="flex:1; border:none; background:transparent; font-size:13px; outline:none; text-align:right; padding:4px 8px;">
+        </div>
+
+        <button id="copy-ai-response-btn" style="width:100%; padding:12px; background:#2563eb; color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:14px; cursor:pointer; box-shadow:0 3px 10px rgba(37, 99, 235, 0.25); display:flex; align-items:center; justify-content:center; gap:6px;">
+            📋 نسخ الإجابة
+        </button>
     `;
 
-    const copyBtn = document.getElementById("copy-response-btn");
+    showModal(title, htmlContent);
+
+    // نسخ الإجابة
+    const copyBtn = document.getElementById("copy-ai-response-btn");
     if (copyBtn) {
         copyBtn.onclick = () => {
-            const textToCopy = document.getElementById("response-text-content").innerText;
-            navigator.clipboard.writeText(textToCopy).then(() => alert("تم النسخ!"));
+            const textToCopy = document.getElementById("ai-response-box").innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => alert("تم نسخ الإجابة بنجاح!"));
+        };
+    }
+
+    // سؤال متابعة
+    const followupBtn = document.getElementById("followup-send-btn");
+    const followupInput = document.getElementById("followup-input");
+    if (followupBtn && followupInput) {
+        followupBtn.onclick = async () => {
+            const query = followupInput.value.trim();
+            if (!query) return;
+
+            const box = document.getElementById("ai-response-box");
+            box.innerHTML += `<hr style="margin:12px 0; border:0; border-top:1px solid #e2e8f0;"><strong style="color:#2563eb;">سؤالك: ${query}</strong><br>⚡ جاري التحميل...`;
+            followupInput.value = "";
+
+            try {
+                const prompt = `بناءً على التوضيح السابق، أجب على هذا السؤال المتابع باختصار: ${query}`;
+                const newRes = await callGeminiStream(prompt);
+                const currentContent = box.innerHTML.replace("⚡ جاري التحميل...", formatMarkdown(newRes));
+                box.innerHTML = currentContent;
+            } catch (err) {
+                alert(err.message);
+            }
         };
     }
 }
 
-// 4. أدوات تحليل وتخطيط المشاريع
+function prepareFastModal(title) {
+    showModal(title, `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center; color:#64748b; font-size:14px;">
+            ⚡ جاري جلب البيانات والتحليل...
+        </div>
+    `);
+}
+
+// 5. قسم أدوات وتخطيط المشاريع
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("💡 تحليل الفكرة والتقنيات");
-        const prompt = `أعط تحليلاً سريعاً ومباشراً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة في نقاط.`;
         try {
-            const result = await callGeminiStream(prompt, (currentText) => {
-                const textElem = document.getElementById("response-text-content");
-                if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-            });
+            const prompt = `أعط تحليلاً سريعاً ومباشراً لفكرة المشروع: "${idea}". اذكر الأهداف، التقنيات المناسبة، ومراحل العمل المباشرة في نقاط.`;
+            const result = await callGeminiStream(prompt);
             saveChatToHistory(idea, result);
-            renderResponseWithTools(result);
+            renderAIResponse("💡 تحليل الفكرة والتقنيات", result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ حدث خطأ أثناء الاتصال.'}</p>`;
+            showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
         }
     };
 }
@@ -140,16 +167,13 @@ if (btnCalculator) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("💰 الميزانية والوقت");
-        const prompt = `قدم تقدير مالي وزمني مقتضب بالدولار والأسابيع لتنفيذ: "${idea}".`;
         try {
-            const result = await callGeminiStream(prompt, (currentText) => {
-                const textElem = document.getElementById("response-text-content");
-                if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-            });
+            const prompt = `قدم تقدير مالي وزمني مقتضب بالدولار والأسابيع لتنفيذ: "${idea}".`;
+            const result = await callGeminiStream(prompt);
             saveChatToHistory(`ميزانية: ${idea}`, result);
-            renderResponseWithTools(result);
+            renderAIResponse("💰 الميزانية والوقت", result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ خطأ في الاتصال'}</p>`;
+            showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
         }
     };
 }
@@ -159,21 +183,18 @@ if (btnDbGenerator) {
         const idea = projectIdea ? projectIdea.value.trim() : "";
         if (!idea) return alert("اكتبي الفكرة أولاً في المربع!");
         prepareFastModal("🗄️ هيكل قواعد البيانات");
-        const prompt = `صمم هيكل قواعد بيانات مبسط لمشروع: "${idea}".`;
         try {
-            const result = await callGeminiStream(prompt, (currentText) => {
-                const textElem = document.getElementById("response-text-content");
-                if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-            });
+            const prompt = `صمم هيكل قواعد بيانات مبسط لمشروع: "${idea}".`;
+            const result = await callGeminiStream(prompt);
             saveChatToHistory(`Schema: ${idea}`, result);
-            renderResponseWithTools(result);
+            renderAIResponse("🗄️ هيكل قواعد البيانات", result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ خطأ في الاتصال'}</p>`;
+            showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
         }
     };
 }
 
-// 5. زر مترجم ومولد لغات البرمجة المستقل
+// 6. مترجم الكود
 if (btnCodeTranslator) {
     btnCodeTranslator.onclick = () => {
         const translatorHtml = `
@@ -194,208 +215,231 @@ if (btnCodeTranslator) {
 
         showModal("🔄 مترجم ومولد لغات البرمجة", translatorHtml);
 
-        // تحويل كود
         document.getElementById("exec-convert-btn").onclick = async () => {
             const code = document.getElementById("translator-input").value.trim();
             const lang = document.getElementById("target-language").value.trim();
 
-            if (!code || !lang) return alert("يرجى إدخال الكود وتحديد اللغة المستهدفة للتحويل!");
-
+            if (!code || !lang) return alert("يرجى إدخال الكود وتحديد اللغة المستهدفة!");
             prepareFastModal(`🔄 تحويل الكود إلى ${lang}`);
-            const prompt = `قم بتحويل الكود التالي بدقة إلى لغة (${lang}) مع شرح مختصر لأهم النواحي البرمجية:\n\`\`\`\n${code}\n\`\`\``;
-
             try {
-                const result = await callGeminiStream(prompt, (currentText) => {
-                    const textElem = document.getElementById("response-text-content");
-                    if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-                });
+                const prompt = `قم بتحويل الكود التالي بدقة إلى لغة (${lang}):\n\`\`\`\n${code}\n\`\`\``;
+                const result = await callGeminiStream(prompt);
                 saveChatToHistory(`تحويل كود لـ ${lang}`, result);
-                renderResponseWithTools(result);
+                renderAIResponse(`🔄 تحويل الكود إلى ${lang}`, result);
             } catch (err) {
-                modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ حدث خطأ أثناء التحويل.'}</p>`;
+                showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
             }
         };
 
-        // طلب/توليد كود
         document.getElementById("exec-generate-btn").onclick = async () => {
             const request = document.getElementById("translator-input").value.trim();
             const lang = document.getElementById("target-language").value.trim();
 
-            if (!request) return alert("يرجى كتابة الكود أو الوظيفة المطلوبة!");
-
+            if (!request) return alert("يرجى كتابة الكود المطلوب!");
             prepareFastModal("✨ توليد الكود المطلوب");
-            const prompt = `اكتب كوداً برمجياً بـ ${lang ? "لغة " + lang : "اللغة المناسبة"} لإنجاز ما يلي:\n${request}\nمع تعليقات توضيحية.`;
-
             try {
-                const result = await callGeminiStream(prompt, (currentText) => {
-                    const textElem = document.getElementById("response-text-content");
-                    if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-                });
+                const prompt = `اكتب كوداً برمجياً بـ ${lang ? "لغة " + lang : "اللغة المناسبة"} لإنجاز:\n${request}`;
+                const result = await callGeminiStream(prompt);
                 saveChatToHistory(`طلب كود: ${request.slice(0, 15)}...`, result);
-                renderResponseWithTools(result);
+                renderAIResponse("✨ توليد الكود المطلوب", result);
             } catch (err) {
-                modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ حدث خطأ أثناء التوليد.'}</p>`;
+                showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
             }
         };
     };
 }
 
-// 6. وظائف الموسوعات والبحث الداخلي
-function setupInternalSearch(dataArray, renderFunction) {
-    const list = dataArray || [];
-    const searchBoxHtml = `
-        <input type="text" id="modal-internal-search" placeholder="🔍 بحث سريع..." 
-               style="width:100%; padding:10px 12px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:8px; outline:none; font-size:13px; box-sizing:border-box;">
-        <div id="modal-items-container"></div>
-    `;
-    return { searchBoxHtml, bindEvent: () => {
-        const input = document.getElementById("modal-internal-search");
-        const container = document.getElementById("modal-items-container");
-        
-        const updateList = (filterText = "") => {
-            const filtered = list.filter(item => {
-                const name = item.name || item.title || "";
-                const desc = item.desc || item.description || "";
-                return name.toLowerCase().includes(filterText.toLowerCase()) || 
-                       desc.toLowerCase().includes(filterText.toLowerCase());
-            });
-            if (filtered.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#64748b; padding:10px;">لا توجد نتائج مطابقة.</p>`;
-            } else {
-                container.innerHTML = renderFunction(filtered);
-            }
-        };
-        
-        updateList();
-        if (input) input.oninput = (e) => updateList(e.target.value);
-    }};
-}
-
+// 7. موسوعة أقسام لغات البرمجة (نفس تصميم الصورة 1)
 if (btnLanguages) {
     btnLanguages.onclick = () => {
-        if (typeof programmingCategories === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
-        let categoriesHtml = `<div style="display:flex; flex-direction:column; gap:10px;">`;
+        if (typeof programmingCategories === 'undefined') return alert("تأكدي من وجود data.js!");
+
+        let html = `
+            <p style="text-align:center; color:#64748b; font-size:13px; margin-bottom:14px;">
+                اختر المجال لعرض كافة اللغات والشرح التفصيلي الخاص بها:
+            </p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+        `;
+
         programmingCategories.forEach(cat => {
-            categoriesHtml += `
-                <button class="cat-select-btn" data-id="${cat.id}" style="text-align:right; width:100%; background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px; border-radius:10px; cursor:pointer;">
-                    <div style="font-size:15px; font-weight:bold; color:#1d4ed8;">${cat.title}</div>
-                    <div style="font-size:12px; color:#64748b; margin-top:3px;">${cat.desc}</div>
-                </button>
+            html += `
+                <div class="cat-card-item" data-id="${cat.id}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; cursor:pointer; box-shadow:0 4px 12px rgba(37, 99, 235, 0.06); text-align:center; transition:transform 0.2s;">
+                    <h3 style="color:#1d4ed8; font-size:15px; font-weight:bold; margin-bottom:6px;">${cat.title}</h3>
+                    <p style="color:#64748b; font-size:12px; line-height:1.5;">${cat.desc}</p>
+                </div>
             `;
         });
-        categoriesHtml += `</div>`;
-        showModal("💻 موسوعة أقسام لغات البرمجة", categoriesHtml);
 
-        document.querySelectorAll(".cat-select-btn").forEach(btn => {
-            btn.onclick = () => {
-                const catId = btn.getAttribute("data-id");
+        html += `</div>`;
+
+        showModal("💻 موسوعة أقسام لغات البرمجة", html);
+
+        document.querySelectorAll(".cat-card-item").forEach(card => {
+            card.onclick = () => {
+                const catId = card.getAttribute("data-id");
                 const selectedCat = programmingCategories.find(c => c.id === catId);
-                
-                const searchSetup = setupInternalSearch(selectedCat.languages, (items) => {
-                    return items.map(item => `
-                        <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
-                            <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                            <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                        </div>
-                    `).join('');
-                });
-                showModal(selectedCat.title, searchSetup.searchBoxHtml);
-                searchSetup.bindEvent();
+                showCategoryLanguages(selectedCat);
             };
         });
     };
 }
 
-if (btnTools) {
-    btnTools.onclick = () => {
-        if (typeof devTools === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
-        const searchSetup = setupInternalSearch(devTools, (items) => {
-            return items.map(item => `
-                <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
-                    <h4 style="color:#1d4ed8; margin-bottom:6px;">${item.name}</h4>
-                    <div style="font-size:13px; color:#334155;">${formatMarkdown(item.desc)}</div>
+function showCategoryLanguages(category) {
+    let html = `
+        <input type="text" id="lang-internal-search" placeholder="🔍 بحث سريع..." 
+               style="width:100%; padding:10px 14px; margin-bottom:14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; text-align:right;">
+        <div id="lang-items-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+    `;
+
+    showModal(category.title, html);
+
+    const renderLangs = (filter = "") => {
+        const container = document.getElementById("lang-items-list");
+        const filtered = category.languages.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.desc.toLowerCase().includes(filter.toLowerCase()));
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:13px;">لا توجد نتائج مطابقة.</p>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(lang => `
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:14px; text-align:right; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+                <h4 style="color:#1d4ed8; font-size:14px; margin-bottom:6px;">${lang.name}</h4>
+                <p style="color:#334155; font-size:12.5px; line-height:1.6;">${formatMarkdown(lang.desc)}</p>
+            </div>
+        `).join('');
+    };
+
+    renderLangs();
+    document.getElementById("lang-internal-search").oninput = (e) => renderLangs(e.target.value);
+}
+
+// 8. قاموس مصطلحات المطورين مع زر نسخ المصطلح (نفس تصميم الصورة 2)
+if (btnGlossarySidebar) {
+    btnGlossarySidebar.onclick = () => {
+        if (typeof techGlossary === 'undefined') return alert("تأكدي من وجود data.js!");
+
+        let html = `
+            <input type="text" id="glossary-search-input" placeholder="🔍 بحث سريع..." 
+                   style="width:100%; padding:10px 14px; margin-bottom:14px; border:1px solid #e2e8f0; border-radius:10px; outline:none; font-size:13px; text-align:right; background:#f8fafc;">
+            <div id="glossary-list-container" style="display:flex; flex-direction:column; gap:14px;"></div>
+        `;
+
+        showModal("📖 قاموس مصطلحات المطورين", html);
+
+        const renderGlossary = (filter = "") => {
+            const container = document.getElementById("glossary-list-container");
+            const filtered = techGlossary.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()) || item.desc.toLowerCase().includes(filter.toLowerCase()));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:13px;">لا توجد مصطلحات مطابقة.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map((item, index) => `
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px; text-align:center; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
+                    <h4 style="color:#059669; font-size:15px; font-weight:bold; margin-bottom:8px;">📌 ${item.name}</h4>
+                    <p style="color:#475569; font-size:12.5px; line-height:1.6; margin-bottom:12px; text-align:right;">${formatMarkdown(item.desc)}</p>
+                    <button class="copy-term-btn" data-text="${item.name}: ${item.desc}" style="width:100%; background:#059669; color:#ffffff; border:none; padding:10px; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        📋 نسخ المصطلح
+                    </button>
                 </div>
             `).join('');
-        });
-        showModal("🛠️ الأدوات والتقنيات", searchSetup.searchBoxHtml);
-        searchSetup.bindEvent();
+
+            document.querySelectorAll(".copy-term-btn").forEach(btn => {
+                btn.onclick = () => {
+                    const text = btn.getAttribute("data-text");
+                    navigator.clipboard.writeText(text).then(() => alert("تم نسخ المصطلح!"));
+                };
+            });
+        };
+
+        renderGlossary();
+        document.getElementById("glossary-search-input").oninput = (e) => renderGlossary(e.target.value);
+    };
+}
+
+// 9. الأدوات وتطبيقات الكود
+if (btnTools) {
+    btnTools.onclick = () => {
+        if (typeof devTools === 'undefined') return;
+        showGlossaryStyleModal("🛠️ الأدوات والتقنيات", devTools);
     };
 }
 
 if (btnIdeApps) {
     btnIdeApps.onclick = () => {
-        if (typeof executionApps === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
-        const searchSetup = setupInternalSearch(executionApps, (items) => {
-            return items.map(app => `
-                <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
-                    <h4 style="color:#1d4ed8; margin-bottom:4px;">${app.name}</h4>
-                    <div style="font-size:13px; color:#334155;">${formatMarkdown(app.desc)}</div>
-                </div>
-            `).join('');
-        });
-        showModal("📱 تطبيقات ومحررات الكود", searchSetup.searchBoxHtml);
-        searchSetup.bindEvent();
+        if (typeof executionApps === 'undefined') return;
+        showGlossaryStyleModal("📱 تطبيقات ومحررات الكود", executionApps);
     };
 }
 
-if (btnGlossarySidebar) {
-    btnGlossarySidebar.onclick = () => {
-        if (typeof techGlossary === 'undefined') return alert("تأكدي من حفظ ملف data.js بشكل صحيح!");
-        const searchSetup = setupInternalSearch(techGlossary, (items) => {
-            return items.map(item => `
-                <div style="background:#fff; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:10px;">
-                    <h4 style="color:#059669; margin-bottom:6px;">📌 ${item.name}</h4>
-                    <div style="font-size:13px; color:#334155; line-height:1.6;">${formatMarkdown(item.desc)}</div>
-                </div>
-            `).join('');
-        });
-        showModal("📖 قاموس المصطلحات", searchSetup.searchBoxHtml);
-        searchSetup.bindEvent();
+function showGlossaryStyleModal(title, dataList) {
+    let html = `
+        <input type="text" id="generic-search-input" placeholder="🔍 بحث سريع..." 
+               style="width:100%; padding:10px 14px; margin-bottom:14px; border:1px solid #e2e8f0; border-radius:10px; outline:none; font-size:13px; text-align:right; background:#f8fafc;">
+        <div id="generic-list-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+    `;
+
+    showModal(title, html);
+
+    const renderList = (filter = "") => {
+        const container = document.getElementById("generic-list-container");
+        const filtered = dataList.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()) || item.desc.toLowerCase().includes(filter.toLowerCase()));
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:13px;">لا توجد نتائج مطابقة.</p>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(item => `
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:14px; text-align:right; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+                <h4 style="color:#1d4ed8; font-size:14px; margin-bottom:6px;">${item.name}</h4>
+                <p style="color:#334155; font-size:12.5px; line-height:1.6;">${formatMarkdown(item.desc)}</p>
+            </div>
+        `).join('');
     };
+
+    renderList();
+    document.getElementById("generic-search-input").oninput = (e) => renderList(e.target.value);
 }
 
-// 7. خرائط الطريق
+// 10. خرائط الطريق (Roadmaps) (نفس تصميم الصورة 3)
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
-        showModal("🌐 تطوير الويب", "");
-        renderResponseWithTools(roadmapsData.web);
+        renderAIResponse("🌐 خارطة طريق الويب", roadmapsData.web);
     };
 }
 
 if (btnRoadmapMobile) {
     btnRoadmapMobile.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
-        showModal("📱 تطوير التطبيقات", "");
-        renderResponseWithTools(roadmapsData.mobile);
+        renderAIResponse("📱 خارطة طريق التطبيقات", roadmapsData.mobile);
     };
 }
 
 if (btnRoadmapAi) {
     btnRoadmapAi.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
-        showModal("🤖 الذكاء الاصطناعي", "");
-        renderResponseWithTools(roadmapsData.ai);
+        renderAIResponse("🤖 خارطة طريق الذكاء الاصطناعي", roadmapsData.ai);
     };
 }
 
-// 8. البحث العلوي والسجل
+// 11. البحث العلوي والسجل
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput ? searchInput.value.trim() : "";
         if (!query) return;
         if (searchInput) searchInput.value = "";
         prepareFastModal("🔍 نتيجة البحث");
-        const prompt = `أجب فوراً بإيجاز وسرعة في نقاط عن: ${query}`;
         try {
-            const result = await callGeminiStream(prompt, (currentText) => {
-                const textElem = document.getElementById("response-text-content");
-                if (textElem) textElem.innerHTML = formatMarkdown(currentText);
-            });
+            const prompt = `أجب فوراً بإيجاز وسرعة في نقاط عن: ${query}`;
+            const result = await callGeminiStream(prompt);
             saveChatToHistory(query, result);
-            renderResponseWithTools(result);
+            renderAIResponse("🔍 نتيجة البحث", result);
         } catch (err) {
-            modalBody.innerHTML = `<p style="color:#ef4444; padding:10px; text-align:center;">${err.message || '❌ خطأ في الاتصال'}</p>`;
+            showModal("خطأ", `<p style="color:#ef4444; text-align:center;">${err.message}</p>`);
         }
     };
 }
@@ -409,6 +453,7 @@ function createHistorySidebar() {
         position: fixed; bottom: 20px; left: 20px;
         background: #0f172a; color: #fff; border: none; padding: 10px 18px;
         border-radius: 25px; cursor: pointer; z-index: 999; font-weight: bold; font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     `;
     document.body.appendChild(btn);
     btn.onclick = openHistoryModal;
@@ -417,34 +462,39 @@ function createHistorySidebar() {
 function openHistoryModal() {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     if (history.length === 0) {
-        showModal("📜 السجل", "<p style='text-align:center; padding:20px;'>لا يوجد سجل حتى الآن.</p>");
+        showModal("📜 السجل", "<p style='text-align:center; padding:20px; color:#64748b;'>لا يوجد سجل محادثات حتى الآن.</p>");
         return;
     }
-    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
+
+    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
     history.slice().reverse().forEach((item, index) => {
         content += `
-            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; cursor:pointer;">
-                <div style="font-size:11px; color:#64748b;">🕒 ${item.date}</div>
-                <div style="font-weight:bold; color:#1d4ed8; font-size:14px;">🔍 ${item.question}</div>
+            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; text-align:right;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">🕒 ${item.date}</div>
+                <div style="font-weight:bold; color:#1d4ed8; font-size:13.5px;">🔍 ${item.question}</div>
             </div>
         `;
     });
     content += `</div>`;
+
     showModal("📜 سجل البحث والمحادثات", content);
 
     document.querySelectorAll(".history-item").forEach(el => {
         el.onclick = () => {
             const idx = el.getAttribute("data-index");
             const selected = history[idx];
-            showModal(`💡 ${selected.question}`, "");
-            renderResponseWithTools(selected.answer);
+            renderAIResponse(`💡 ${selected.question}`, selected.answer);
         };
     });
 }
 
 function saveChatToHistory(question, answer) {
     const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    history.push({ question, answer, date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) });
+    history.push({ 
+        question, 
+        answer, 
+        date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) 
+    });
     localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
