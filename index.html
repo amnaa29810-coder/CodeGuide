@@ -9,13 +9,18 @@
 <body>
 
     <div class="container">
-        <!-- الهيدر والبحث -->
+        <!-- الهيدر والبحث العلوي -->
         <div class="header-card">
-            <button id="btn-glossary-sidebar" class="btn-green">📖 قاموس المصطلحات</button>
+            <div class="top-bar-btns">
+                <button id="btn-glossary-sidebar" class="action-btn btn-green">📖 قاموس المصطلحات</button>
+                <button id="btn-favorites" class="action-btn btn-orange">⭐ المفضلة</button>
+                <button id="btn-history" class="action-btn btn-purple">📜 السجل</button>
+            </div>
+
             <div class="search-title">🔍 البحث السريع</div>
             <div class="search-row">
-                <button id="search-btn" class="btn-blue">بحث</button>
                 <input type="text" id="search-input" placeholder="اسأل عن أي مفهوم أو تقنية...">
+                <button id="search-btn" class="action-btn btn-blue">بحث</button>
             </div>
         </div>
 
@@ -24,9 +29,11 @@
             <div class="section-header">
                 <h3>📚 الموسوعات البرمجية</h3>
             </div>
-            <button id="btn-languages" class="item-btn">💻 لغات البرمجة</button>
-            <button id="btn-tools" class="item-btn">🛠️ الأدوات والتقنيات</button>
-            <button id="btn-ide-apps" class="item-btn">📱 تطبيقات ومحررات الكود</button>
+            <div class="grid-btns">
+                <button id="btn-languages" class="item-btn">💻 لغات البرمجة</button>
+                <button id="btn-tools" class="item-btn">🛠️ الأدوات والتقنيات</button>
+                <button id="btn-ide-apps" class="item-btn">📱 تطبيقات ومحررات الكود</button>
+            </div>
         </div>
 
         <!-- أدوات وتخطيط المشاريع -->
@@ -36,10 +43,12 @@
             </div>
             <textarea id="project-idea" placeholder="اكتب فكرة مشروعك هنا..."></textarea>
             
-            <button id="analyze-project-btn" class="item-btn">💡 تحليل الفكرة والتقنيات</button>
-            <button id="btn-calculator" class="item-btn">💰 الميزانية والوقت</button>
-            <button id="btn-db-generator" class="item-btn">🗄️ هيكل قواعد البيانات</button>
-            <button id="btn-code-translator" class="item-btn">🔄 مترجم لغات البرمجة</button>
+            <div class="grid-btns">
+                <button id="analyze-project-btn" class="item-btn btn-highlight">💡 تحليل الفكرة والتقنيات</button>
+                <button id="btn-calculator" class="item-btn">💰 الميزانية والوقت</button>
+                <button id="btn-db-generator" class="item-btn">🗄️ هيكل قواعد البيانات</button>
+                <button id="btn-code-translator" class="item-btn">🔄 مترجم لغات البرمجة</button>
+            </div>
         </div>
 
         <!-- خرائط طريق المبرمج -->
@@ -47,22 +56,15 @@
             <div class="section-header">
                 <h3>🗺️ خرائط طريق المبرمج (Roadmaps)</h3>
             </div>
-            <button id="btn-roadmap-web" class="item-btn">🌐 تطوير الويب</button>
-            <button id="btn-roadmap-mobile" class="item-btn">📱 تطوير التطبيقات</button>
-            <button id="btn-roadmap-ai" class="item-btn">🤖 الذكاء الاصطناعي</button>
+            <div class="grid-btns">
+                <button id="btn-roadmap-web" class="item-btn">🌐 تطوير الويب</button>
+                <button id="btn-roadmap-mobile" class="item-btn">📱 تطوير التطبيقات</button>
+                <button id="btn-roadmap-ai" class="item-btn">🤖 الذكاء الاصطناعي</button>
+            </div>
         </div>
     </div>
 
-    <!-- النافذة المنبثقة -->
+    <!-- النافذة المنبثقة الشاملة -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
-            <span id="close-modal" class="close-btn">&times;</span>
-            <h2 id="modal-title">العنوان</h2>
-            <div id="modal-body"></div>
-        </div>
-    </div>
-
-    <script src="data.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+            <div
