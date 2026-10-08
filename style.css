@@ -1,177 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Cairo', sans-serif;
 }
 
 body {
-    background-color: #f4f6f9;
-    color: #333;
+    background-color: #0f172a;
+    color: #f8fafc;
     direction: rtl;
-    padding: 15px 10px;
+    padding: 20px;
     display: flex;
     justify-content: center;
 }
 
 .container {
     width: 100%;
-    max-width: 420px;
+    max-width: 800px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
-/* الهيدر العلوي */
-.header-card {
-    background: #ffffff;
+/* الكروت الرئيسية */
+.header-card, .section-card {
+    background: #1e293b;
     border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.btn-green {
-    position: absolute;
-    top: -10px;
-    right: 15px;
-    background: #10b981;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
-}
-
-.search-title {
-    text-align: center;
-    font-size: 14px;
-    font-weight: bold;
-    color: #475569;
-    margin-top: 10px;
-}
-
-.search-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.search-row input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    outline: none;
-    font-size: 13px;
-    background: #f8fafc;
-    text-align: right;
-}
-
-.btn-blue {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
-}
-
-/* الكروت البيضاء والأزرار */
-.section-card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid #334155;
 }
 
 .section-header h3 {
-    font-size: 15px;
-    color: #1e293b;
-    text-align: center;
-    margin-bottom: 5px;
+    color: #38bdf8;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
 }
 
+/* أزرار الإجراءات العليا */
+.top-bar-btns {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+/* تصميم الأزرار المجسمة والحقيقية 3D */
+.action-btn, .item-btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.1s ease;
+    position: relative;
+    user-select: none;
+}
+
+/* تأثير البروز ثلاثي الأبعاد والضغط الواقعي */
 .item-btn {
     width: 100%;
-    padding: 12px;
-    background: #f8fafc;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.item-btn:active {
-    background: #e2e8f0;
-}
-
-textarea#project-idea {
-    width: 100%;
-    height: 75px;
-    padding: 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    resize: none;
-    font-size: 13px;
-    outline: none;
-    background: #f8fafc;
+    padding: 14px 18px;
+    background: linear-gradient(145deg, #334155, #1e293b);
+    color: #f8fafc;
+    border: 1px solid #475569;
+    box-shadow: 0 5px 0 #0f172a, 0 8px 15px rgba(0, 0, 0, 0.4);
     text-align: right;
+    font-size: 1rem;
+    margin-bottom: 10px;
 }
 
-/* النافذة المنبثقة */
+.item-btn:hover {
+    background: linear-gradient(145deg, #475569, #334155);
+    color: #38bdf8;
+}
+
+.item-btn:active, .action-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #0f172a, 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-highlight {
+    background: linear-gradient(145deg, #2563eb, #1d4ed8) !important;
+    color: #ffffff !important;
+    box-shadow: 0 5px 0 #1e3a8a, 0 8px 15px rgba(37, 99, 235, 0.4) !important;
+}
+
+.action-btn {
+    padding: 10px 16px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.btn-green { background: #10b981; box-shadow: 0 4px 0 #047857; }
+.btn-orange { background: #f59e0b; box-shadow: 0 4px 0 #b45309; }
+.btn-purple { background: #8b5cf6; box-shadow: 0 4px 0 #6d28d9; }
+.btn-blue { background: #3b82f6; box-shadow: 0 4px 0 #1d4ed8; }
+
+/* شريط البحث وحقل النصوص */
+.search-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+input[type="text"], textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+}
+
+input[type="text"]:focus, textarea:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+/* النافذة المنبثقة (Modal) */
 .modal {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.4);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    padding: 15px;
+    backdrop-filter: blur(5px);
 }
 
-.modal.hidden { display: none; }
+.modal.hidden {
+    display: none;
+}
 
 .modal-content {
-    background: #fff;
-    width: 100%;
-    max-width: 400px;
-    border-radius: 16px;
-    padding: 18px;
-    position: relative;
-    max-height: 80vh;
+    background: #1e293b;
+    width: 90%;
+    max-width: 650px;
+    max-height: 85vh;
+    border-radius: 20px;
+    padding: 25px;
     overflow-y: auto;
+    border: 1px solid #475569;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .close-btn {
-    position: absolute;
-    left: 15px; top: 12px;
-    font-size: 22px;
+    font-size: 1.8rem;
     cursor: pointer;
     color: #94a3b8;
 }
 
-#modal-title {
-    font-size: 15px;
-    margin-bottom: 12px;
-    color: #0f172a;
-    text-align: center;
+.close-btn:hover {
+    color: #ef4444;
 }
