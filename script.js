@@ -1,7 +1,7 @@
 // ==========================================
 // 1. مفتاح الـ API المشفر وتشفير Base64
 // ==========================================
-const part1 = "QVEuQWI4Uk42SzR4N1dmZWhMQngwdzI3WE45eFRmQzU5LTQtREo1SDRmdlNmOFdVY2tyUEE=";
+const part1 = "QVEuQWI4Uk42TGN0RllVaV9OVXZ3dUFESHFqV1poMENEWUF1U2N2Z3VZZjlvbnpzR04taVE=";
 const GEMINI_API_KEY = atob(part1).trim().replace(/\s+/g, '');
 
 // ==========================================
