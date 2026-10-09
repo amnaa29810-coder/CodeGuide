@@ -1,8 +1,12 @@
-// تشفير وتجزئة مفتاح الـ API الجديد لحمايته وتجاوز فحص GitHub
+// ==========================================
+// 1. مفتاح الـ API المشفر وتشفير Base64
+// ==========================================
 const part1 = "QVEuQWI4Uk42SzR4N1dmZWhMQngwdzI3WE45eFRmQzU5LTQtREo1SDRmdlNmOFdVY2tyUEE=";
 const GEMINI_API_KEY = atob(part1).trim().replace(/\s+/g, '');
 
-// 1. العناصر الأساسية
+// ==========================================
+// 2. العناصر الأساسية والتحكم بالنافذة (Modal)
+// ==========================================
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const projectIdea = document.getElementById("project-idea");
@@ -26,7 +30,85 @@ const closeModal = document.getElementById("close-modal");
 const modalTitle = document.getElementById("modal-title");
 const modalBody = document.getElementById("modal-body");
 
-// 2. إدارة المفضلة (Favorites)
+function showModal(title, htmlContent) {
+    if (!modalTitle || !modalBody || !modal) return;
+    modalTitle.innerText = title;
+    modalBody.innerHTML = htmlContent;
+    modal.classList.remove("hidden");
+}
+
+function hideModal() {
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+if (closeModal) {
+    closeModal.onclick = hideModal;
+}
+
+window.onclick = (e) => {
+    if (e.target === modal) hideModal();
+};
+
+function formatMarkdown(text) {
+    if (!text) return "";
+    return text
+        .replace(/### (.*?)\n/g, '<strong style="color:#1d4ed8; font-size:15px; display:block; margin-top:8px;">$1</strong>')
+        .replace(/## (.*?)\n/g, '<strong style="color:#0f172a; font-size:16px; display:block; margin-top:10px;">$1</strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/---/g, '<hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">')
+        .replace(/\n/g, '<br>');
+}
+
+// ==========================================
+// 3. الاتصال بـ Gemini API (gemini-2.5-flash)
+// ==========================================
+async function callGeminiStream(promptText, onChunk) {
+    const models = ["gemini-2.5-flash"];
+    let lastError = null;
+
+    for (const model of models) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
+                if (onChunk) onChunk(fullText);
+                return fullText;
+            }
+
+            const errData = await response.json().catch(() => ({}));
+            lastError = errData.error?.message || `خطأ (${response.status})`;
+        } catch (err) {
+            lastError = err.message;
+        }
+    }
+
+    throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
+}
+
+function prepareFastModal(title) {
+    showModal(title, `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center; color:#64748b; font-size:14px;">
+            ⚡ جاري جلب البيانات والتحليل...
+        </div>
+    `);
+}
+
+// ==========================================
+// 4. إدارة المفضلة (Favorites) والسجل (History)
+// ==========================================
 function getFavorites() {
     return JSON.parse(localStorage.getItem("appFavorites") || "[]");
 }
@@ -75,92 +157,48 @@ function openFavoritesModal() {
     });
 }
 
-// 3. إضافة زر المفضلة بجانب زر القاموس في الهيدر
-function attachFavoriteButtonToSidebar() {
-    if (btnGlossarySidebar && !document.getElementById("btn-favorites-sidebar")) {
-        const favBtn = document.createElement("button");
-        favBtn.id = "btn-favorites-sidebar";
-        favBtn.innerHTML = "⭐ المفضلة";
-        favBtn.style.cssText = `
-            background: #f59e0b;
-            color: #ffffff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.82rem;
-            cursor: pointer;
-            margin-right: 8px;
-            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+function openHistoryModal() {
+    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    if (history.length === 0) {
+        showModal("📜 السجل", "<p style='text-align:center; padding:20px; color:#64748b;'>لا يوجد سجل محادثات حتى الآن.</p>");
+        return;
+    }
+
+    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
+    history.slice().reverse().forEach((item, index) => {
+        content += `
+            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; text-align:right;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">🕒 ${item.date}</div>
+                <div style="font-weight:bold; color:#1d4ed8; font-size:13.5px;">🔍 ${item.question}</div>
+            </div>
         `;
-        
-        btnGlossarySidebar.parentNode.insertBefore(favBtn, btnGlossarySidebar.nextSibling);
-        favBtn.onclick = openFavoritesModal;
-    }
+    });
+    content += `</div>`;
+
+    showModal("📜 سجل البحث والمحادثات", content);
+
+    document.querySelectorAll(".history-item").forEach(el => {
+        el.onclick = () => {
+            const idx = el.getAttribute("data-index");
+            const selected = history[idx];
+            renderAIResponse(`💡 ${selected.question}`, selected.answer);
+        };
+    });
 }
 
-// 4. إدارة النافذة المنبثقة
-function showModal(title, htmlContent) {
-    if (!modalTitle || !modalBody || !modal) return;
-    modalTitle.innerText = title;
-    modalBody.innerHTML = htmlContent;
-    modal.classList.remove("hidden");
+function saveChatToHistory(question, answer) {
+    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    history.push({ 
+        question, 
+        answer, 
+        date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) 
+    });
+    localStorage.setItem("chatHistory", JSON.stringify(history));
 }
 
-if (closeModal) {
-    closeModal.onclick = () => modal.classList.add("hidden");
-}
-
-window.onclick = (e) => {
-    if (e.target === modal) modal.classList.add("hidden");
-};
-
-function formatMarkdown(text) {
-    if (!text) return "";
-    return text
-        .replace(/### (.*?)\n/g, '<strong style="color:#1d4ed8; font-size:15px; display:block; margin-top:8px;">$1</strong>')
-        .replace(/## (.*?)\n/g, '<strong style="color:#0f172a; font-size:16px; display:block; margin-top:10px;">$1</strong>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/---/g, '<hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">')
-        .replace(/\n/g, '<br>');
-}
-
-// 5. الاتصال بـ Gemini API
-async function callGeminiStream(promptText, onChunk) {
-    const models = ["gemini-2.5-flash"];
-    let lastError = null;
-
-    for (const model of models) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-        
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }]
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
-                if (onChunk) onChunk(fullText);
-                return fullText;
-            }
-
-            const errData = await response.json().catch(() => ({}));
-            lastError = errData.error?.message || `خطأ (${response.status})`;
-        } catch (err) {
-            lastError = err.message;
-        }
-    }
-
-    throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
-}
-
-// 6. عرض إجابة الذكاء الاصطناعي
+// ==========================================
+// 5. عرض نتائج وتفاعلات الذكاء الاصطناعي
+// ==========================================
 function renderAIResponse(title, rawText) {
     const formattedHtml = formatMarkdown(rawText);
     const htmlContent = `
@@ -221,15 +259,9 @@ function renderAIResponse(title, rawText) {
     }
 }
 
-function prepareFastModal(title) {
-    showModal(title, `
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center; color:#64748b; font-size:14px;">
-            ⚡ جاري جلب البيانات والتحليل...
-        </div>
-    `);
-}
-
-// 7. قسم أدوات وتخطيط المشاريع
+// ==========================================
+// 6. أدوات وتخطيط المشاريع
+// ==========================================
 if (analyzeProjectBtn) {
     analyzeProjectBtn.onclick = async () => {
         const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -278,7 +310,6 @@ if (btnDbGenerator) {
     };
 }
 
-// 8. مترجم الكود
 if (btnCodeTranslator) {
     btnCodeTranslator.onclick = () => {
         const translatorHtml = `
@@ -333,7 +364,9 @@ if (btnCodeTranslator) {
     };
 }
 
-// 9. موسوعة أقسام لغات البرمجة
+// ==========================================
+// 7. موسوعات وقواميس المطورين
+// ==========================================
 if (btnLanguages) {
     btnLanguages.onclick = () => {
         if (typeof programmingCategories === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -347,7 +380,7 @@ if (btnLanguages) {
 
         programmingCategories.forEach(cat => {
             html += `
-                <div class="cat-card-item" data-id="${cat.id}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; cursor:pointer; box-shadow:0 4px 12px rgba(37, 99, 235, 0.06); text-align:center; transition:transform 0.2s;">
+                <div class="cat-card-item" data-id="${cat.id}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; cursor:pointer; box-shadow:0 4px 12px rgba(37, 99, 235, 0.06); text-align:center;">
                     <h3 style="color:#1d4ed8; font-size:15px; font-weight:bold; margin-bottom:6px;">${cat.title}</h3>
                     <p style="color:#64748b; font-size:12px; line-height:1.5;">${cat.desc}</p>
                 </div>
@@ -398,7 +431,6 @@ function showCategoryLanguages(category) {
     document.getElementById("lang-internal-search").oninput = (e) => renderLangs(e.target.value);
 }
 
-// 10. قاموس مصطلحات المطورين
 if (btnGlossarySidebar) {
     btnGlossarySidebar.onclick = () => {
         if (typeof techGlossary === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -424,7 +456,7 @@ if (btnGlossarySidebar) {
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:14px; text-align:center; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
                     <h4 style="color:#059669; font-size:15px; font-weight:bold; margin-bottom:8px;">📌 ${item.name}</h4>
                     <p style="color:#475569; font-size:12.5px; line-height:1.6; margin-bottom:12px; text-align:right;">${formatMarkdown(item.desc)}</p>
-                    <button class="copy-term-btn" data-text="${item.name}: ${item.desc}" style="width:100%; background:#059669; color:#ffffff; border:none; padding:10px; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    <button class="copy-term-btn" data-text="${item.name}: ${item.desc}" style="width:100%; background:#059669; color:#ffffff; border:none; padding:10px; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">
                         📋 نسخ المصطلح
                     </button>
                 </div>
@@ -443,7 +475,6 @@ if (btnGlossarySidebar) {
     };
 }
 
-// 11. الأدوات وتطبيقات الكود
 if (btnTools) {
     btnTools.onclick = () => {
         if (typeof devTools === 'undefined') return;
@@ -488,7 +519,9 @@ function showGlossaryStyleModal(title, dataList) {
     document.getElementById("generic-search-input").oninput = (e) => renderList(e.target.value);
 }
 
-// 12. خرائط الطريق (Roadmaps)
+// ==========================================
+// 8. خرائط الطريق والبحث المباشر
+// ==========================================
 if (btnRoadmapWeb) {
     btnRoadmapWeb.onclick = () => {
         if (typeof roadmapsData === 'undefined') return;
@@ -510,7 +543,6 @@ if (btnRoadmapAi) {
     };
 }
 
-// 13. البحث العلوي والسجل
 if (searchBtn) {
     searchBtn.onclick = async () => {
         const query = searchInput ? searchInput.value.trim() : "";
@@ -528,50 +560,10 @@ if (searchBtn) {
     };
 }
 
-function openHistoryModal() {
-    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    if (history.length === 0) {
-        showModal("📜 السجل", "<p style='text-align:center; padding:20px; color:#64748b;'>لا يوجد سجل محادثات حتى الآن.</p>");
-        return;
-    }
-
-    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
-    history.slice().reverse().forEach((item, index) => {
-        content += `
-            <div class="history-item" data-index="${history.length - 1 - index}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; text-align:right;">
-                <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">🕒 ${item.date}</div>
-                <div style="font-weight:bold; color:#1d4ed8; font-size:13.5px;">🔍 ${item.question}</div>
-            </div>
-        `;
-    });
-    content += `</div>`;
-
-    showModal("📜 سجل البحث والمحادثات", content);
-
-    document.querySelectorAll(".history-item").forEach(el => {
-        el.onclick = () => {
-            const idx = el.getAttribute("data-index");
-            const selected = history[idx];
-            renderAIResponse(`💡 ${selected.question}`, selected.answer);
-        };
-    });
-}
-
-function saveChatToHistory(question, answer) {
-    const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    history.push({ 
-        question, 
-        answer, 
-        date: new Date().toLocaleTimeString("ar-EG", {hour: '2-digit', minute:'2-digit'}) 
-    });
-    localStorage.setItem("chatHistory", JSON.stringify(history));
-}
-
-// تشغيل وتهيئة العناصر عند تحميل الصفحة
+// ==========================================
+// 9. تهيئة زر السجل بعد تحميل الصفحة
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    attachFavoriteButtonToSidebar();
-    
-    // ربط زر السجل الموجود في HTML
     const btnHistory = document.getElementById("btn-history");
     if (btnHistory) {
         btnHistory.onclick = openHistoryModal;
