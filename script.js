@@ -3,7 +3,7 @@
 // ==========================================
 function getApiKey() {
     let rawKey = localStorage.getItem("user_gemini_api_key") || "";
-    // تنظيف المفتاح تلقائياً إذا نسختي كلمة api_key معه بالخطأ
+    // تنظيف المفتاح تلقائياً من أي كلمات زائدة
     rawKey = rawKey.replace(/^api_key\s*[:=]\s*/i, "").trim();
     return rawKey;
 }
@@ -13,16 +13,17 @@ function openSettingsModal() {
     const htmlContent = `
         <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-                أدخلي مفتاح الـ API الجديد. تأكدي أن المفتاح يبدأ بـ <b>AIza...</b> ولا تقومي بنسخ كلمة api_key معه.
+                أدخلي مفتاح الـ API الجديد الخاص بك. 
+                <br><strong style="color:#ef4444;">ملاحظة مهمة:</strong> إذا كان مشروعك القديم معطلاً في جوجل، يرجى اختيار <b>(Create API key in NEW project)</b> عند إنشاء المفتاح.
             </p>
             
             <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
                 🔗 للحصول على مفتاح جديد مجاناً:
-                <br><a href="https://aistudio.google.com/" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">اضغط هنا لفتح Google AI Studio</a>
+                <br><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">اضغط هنا لفتح Google AI Studio</a>
             </div>
 
             <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API:</label>
-            <input type="text" id="api-key-input" value="${currentKey}" placeholder="AIzaSy..." 
+            <input type="text" id="api-key-input" value="${currentKey}" placeholder="ألصقي المفتاح هنا..." 
                    style="width:100%; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; background:#f8fafc; direction:ltr; text-align:left;">
 
             <div style="display:flex; gap:8px; margin-top:5px;">
@@ -35,7 +36,7 @@ function openSettingsModal() {
 
     document.getElementById("save-api-key-btn").onclick = () => {
         let val = document.getElementById("api-key-input").value.trim();
-        val = val.replace(/^api_key\s*[:=]\s*/i, "").trim(); // تنظيف فوري عند الحفظ
+        val = val.replace(/^api_key\s*[:=]\s*/i, "").trim();
         if (!val) return alert("يرجى إدخال مفتاح صحيح!");
         localStorage.setItem("user_gemini_api_key", val);
         alert("تم تحديث وحفظ المفتاح بنجاح! ✅");
@@ -88,7 +89,7 @@ function formatMarkdown(text) {
 }
 
 // ==========================================
-// 3. الاتصال بـ Gemini API
+// 3. الاتصال المطور بـ Gemini API (يدعم جميع التنسيقات)
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
     const apiKey = getApiKey();
@@ -102,7 +103,10 @@ async function callGeminiStream(promptText, onChunk) {
     try {
         const response = await fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKey
+            },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptText }] }]
             })
@@ -116,6 +120,11 @@ async function callGeminiStream(promptText, onChunk) {
         }
 
         const errData = await response.json().catch(() => ({}));
+        
+        if (response.status === 403 || (errData.error && errData.error.message.includes("suspended"))) {
+            throw new Error("المشروع المرتبط بهذا المفتاح معطل في جوجل. يرجى الضغط على زر الإعدادات وإنشاء مفتاح في مشروع جديد (Create API key in NEW project).");
+        }
+
         throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
     } catch (err) {
         throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${err.message}`);
@@ -317,7 +326,7 @@ function showGlossaryStyleModal(title, dataList) {
 }
 
 // ==========================================
-// 7. ربط وتفعيل الأزرار
+// 7. ربط وتفعيل كافة الأزرار عند التحميل
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     const { closeModal, modal } = getModalElements();
