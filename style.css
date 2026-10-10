@@ -50,6 +50,25 @@ body {
     font-weight: 500;
 }
 
+/* زر الإعدادات الجديد */
+.settings-btn {
+    background-color: #475569;
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(71, 85, 105, 0.2);
+    white-space: nowrap;
+    transition: transform 0.1s ease;
+}
+
+.settings-btn:active {
+    transform: scale(0.95);
+}
+
 .dict-btn {
     background-color: #059669;
     color: #ffffff;
