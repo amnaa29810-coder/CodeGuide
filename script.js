@@ -1,5 +1,5 @@
 // ==========================================
-// 1. إدارة مفتاح الـ API عبر الذاكرة المحلية (LocalStorage)
+// 1. إدارة مفتاح الـ API عبر الذاكرة المحلية
 // ==========================================
 function getApiKey() {
     return localStorage.getItem("user_gemini_api_key") || "";
@@ -10,21 +10,21 @@ function openSettingsModal() {
     const htmlContent = `
         <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-                لإستخدام ميزات الذكاء الاصطناعي والتحليل الفوري، يرجى إدخال مفتاح الـ API الخاص بك. يتم حفظ المفتاح بشكل آمن في متصفحك فقط.
+                أدخل مفتاح الـ API الجديد الخاص بك. ملاحظة: إذا كان مفتاحك القديم محظوراً، احذفه وضع مفتاحاً جديداً تماماً تم إنشاؤه من حسابك.
             </p>
             
             <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
-                💡 لا تملك مفتاحاً؟ يمكنك الحصول عليه مجاناً بسهولة من موقع جوجل الرسمي:
-                <br><a href="https://aistudio.google.com/" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">🔗 اضغط هنا لفتح Google AI Studio وإنشاء مفتاح</a>
+                🔗 للحصول على مفتاح جديد مجاناً:
+                <br><a href="https://aistudio.google.com/" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">اضغط هنا لفتح Google AI Studio</a>
             </div>
 
-            <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API الخاص بك:</label>
-            <input type="password" id="api-key-input" value="${currentKey}" placeholder="ألصق المفتاح هنا (AIzaSy...)" 
+            <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API:</label>
+            <input type="text" id="api-key-input" value="${currentKey}" placeholder="أدخل المفتاح هنا..." 
                    style="width:100%; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; background:#f8fafc; direction:ltr; text-align:left;">
 
             <div style="display:flex; gap:8px; margin-top:5px;">
                 <button id="save-api-key-btn" style="flex:1; padding:11px; background:#059669; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">💾 حفظ المفتاح</button>
-                <button id="clear-api-key-btn" style="padding:11px 16px; background:#ef4444; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">حذف</button>
+                <button id="clear-api-key-btn" style="padding:11px 16px; background:#ef4444; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">حذف القديم</button>
             </div>
         </div>
     `;
@@ -34,14 +34,14 @@ function openSettingsModal() {
         const val = document.getElementById("api-key-input").value.trim();
         if (!val) return alert("يرجى إدخال مفتاح صحيح!");
         localStorage.setItem("user_gemini_api_key", val);
-        alert("تم حفظ المفتاح بنجاح! ✅");
+        alert("تم تحديث وحفظ المفتاح بنجاح! ✅");
         hideModal();
     };
 
     document.getElementById("clear-api-key-btn").onclick = () => {
         localStorage.removeItem("user_gemini_api_key");
         document.getElementById("api-key-input").value = "";
-        alert("تم حذف المفتاح المحفوظ.");
+        alert("تم حذف المفتاح تماماً.");
     };
 }
 
@@ -84,45 +84,39 @@ function formatMarkdown(text) {
 }
 
 // ==========================================
-// 3. الاتصال بـ Gemini API الديناميكي
+// 3. الاتصال بـ Gemini API
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
     const apiKey = getApiKey();
     if (!apiKey) {
         openSettingsModal();
-        throw new Error("⚠️ لم تقم بإدخال مفتاح الـ API. يرجى إدخاله في نافذة الإعدادات التي ظهرت لك.");
+        throw new Error("⚠️ يرجى إدخال مفتاح الـ API أولاً من زر الإعدادات (⚙️) بالأعلى.");
     }
 
-    const models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"];
-    let lastError = null;
+    // استخدام النموذج المحدث والمستقر
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }]
+            })
+        });
 
-    for (const model of models) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }]
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
-                if (onChunk) onChunk(fullText);
-                return fullText;
-            }
-
-            const errData = await response.json().catch(() => ({}));
-            lastError = errData.error?.message || `خطأ (${response.status})`;
-        } catch (err) {
-            lastError = err.message;
+        if (response.ok) {
+            const data = await response.json();
+            const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
+            if (onChunk) onChunk(fullText);
+            return fullText;
         }
-    }
 
-    throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
+    } catch (err) {
+        throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${err.message}`);
+    }
 }
 
 function prepareFastModal(title) {
@@ -257,7 +251,7 @@ function renderAIResponse(title, rawText) {
 }
 
 // ==========================================
-// 6. دوال الموسوعات والقواميس Mساعدة
+// 6. دوال الموسوعات وقواميس المساعدة
 // ==========================================
 function showCategoryLanguages(category) {
     let html = `
@@ -320,7 +314,7 @@ function showGlossaryStyleModal(title, dataList) {
 }
 
 // ==========================================
-// 7. ربط وتفعيل كافة الأزرار عند اكتمال التحميل
+// 7. ربط وتفعيل الأزرار
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     const { closeModal, modal } = getModalElements();
@@ -331,7 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // ربط زر الإعدادات الجديد
     const btnSettings = document.getElementById("btn-settings");
     if (btnSettings) {
         btnSettings.onclick = openSettingsModal;
@@ -356,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnRoadmapAi = document.getElementById("btn-roadmap-ai");
     const btnHistory = document.getElementById("btn-history");
 
-    // 1. زر البحث
     if (searchBtn) {
         searchBtn.onclick = async () => {
             const query = searchInput ? searchInput.value.trim() : "";
@@ -374,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 2. تحليل الفكرة
     if (analyzeProjectBtn) {
         analyzeProjectBtn.onclick = async () => {
             const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -391,7 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 3. الميزانية والوقت
     if (btnCalculator) {
         btnCalculator.onclick = async () => {
             const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -408,7 +398,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 4. هيكل قواعد البيانات
     if (btnDbGenerator) {
         btnDbGenerator.onclick = async () => {
             const idea = projectIdea ? projectIdea.value.trim() : "";
@@ -425,7 +414,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 5. مترجم الكود
     if (btnCodeTranslator) {
         btnCodeTranslator.onclick = () => {
             const translatorHtml = `
@@ -475,7 +463,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 6. موسوعة اللغات
     if (btnLanguages) {
         btnLanguages.onclick = () => {
             if (typeof programmingCategories === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -501,7 +488,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 7. قاموس المصطلحات
     if (btnGlossarySidebar) {
         btnGlossarySidebar.onclick = () => {
             if (typeof techGlossary === 'undefined') return alert("تأكدي من وجود data.js!");
@@ -509,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 8. الأدوات والتقنيات
     if (btnTools) {
         btnTools.onclick = () => {
             if (typeof devTools === 'undefined') return;
@@ -517,7 +502,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 9. التطبيقات والمحررات
     if (btnIdeApps) {
         btnIdeApps.onclick = () => {
             if (typeof executionApps === 'undefined') return;
@@ -525,7 +509,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 10. خرائط الطريق
     if (btnRoadmapWeb) {
         btnRoadmapWeb.onclick = () => {
             if (typeof roadmapsData === 'undefined') return;
@@ -545,7 +528,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    // 11. السجل
     if (btnHistory) {
         btnHistory.onclick = openHistoryModal;
     }
