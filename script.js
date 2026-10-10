@@ -1,8 +1,10 @@
 // ==========================================
-// 1. مفتاح الـ API المشفر وتشفير Base64
+// 1. قسمي المفتاح الخاص بك إلى جزئين هنا
 // ==========================================
-const part1 = "QVEuQWI4Uk42TGN0RllVaV9OVXZ3dUFESHFqV1poMENEWUF1U2N2Z3VZZjlvbnpzR04taVE=";
-const GEMINI_API_KEY = atob(part1).trim().replace(/\s+/g, '');
+const part1 = "AQ.Ab8RN6IumdvTB5Wv8X-lG81"; // ضعي النصف الأول من المفتاح هنا
+const part2 = "tg1gdoNrKnJ2GanCCegVv8kCkjw"; // ضعي النصف الثاني من المفتاح هنا
+
+const GEMINI_API_KEY = (part1 + part2).trim();
 
 // ==========================================
 // 2. العناصر الأساسية والتحكم بالنافذة (Modal)
@@ -66,6 +68,10 @@ function formatMarkdown(text) {
 // 3. الاتصال بـ Gemini API (gemini-2.5-flash)
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
+    if (!GEMINI_API_KEY) {
+        throw new Error("الرجاء وضع جزأي المفتاح في part1 و part2 أولاً.");
+    }
+
     const models = ["gemini-2.5-flash"];
     let lastError = null;
 
