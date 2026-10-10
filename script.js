@@ -1,8 +1,11 @@
 // ==========================================
-// 1. إدارة مفتاح الـ API عبر الذاكرة المحلية
+// 1. إدارة مفتاح الـ API وتنقيتها تلقائياً
 // ==========================================
 function getApiKey() {
-    return localStorage.getItem("user_gemini_api_key") || "";
+    let rawKey = localStorage.getItem("user_gemini_api_key") || "";
+    // تنظيف المفتاح تلقائياً إذا نسختي كلمة api_key معه بالخطأ
+    rawKey = rawKey.replace(/^api_key\s*[:=]\s*/i, "").trim();
+    return rawKey;
 }
 
 function openSettingsModal() {
@@ -10,7 +13,7 @@ function openSettingsModal() {
     const htmlContent = `
         <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-                أدخل مفتاح الـ API الجديد الخاص بك. ملاحظة: إذا كان مفتاحك القديم محظوراً، احذفه وضع مفتاحاً جديداً تماماً تم إنشاؤه من حسابك.
+                أدخلي مفتاح الـ API الجديد. تأكدي أن المفتاح يبدأ بـ <b>AIza...</b> ولا تقومي بنسخ كلمة api_key معه.
             </p>
             
             <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
@@ -19,7 +22,7 @@ function openSettingsModal() {
             </div>
 
             <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API:</label>
-            <input type="text" id="api-key-input" value="${currentKey}" placeholder="أدخل المفتاح هنا..." 
+            <input type="text" id="api-key-input" value="${currentKey}" placeholder="AIzaSy..." 
                    style="width:100%; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; background:#f8fafc; direction:ltr; text-align:left;">
 
             <div style="display:flex; gap:8px; margin-top:5px;">
@@ -31,7 +34,8 @@ function openSettingsModal() {
     showModal("⚙️ إعدادات مفتاح الذكاء الاصطناعي", htmlContent);
 
     document.getElementById("save-api-key-btn").onclick = () => {
-        const val = document.getElementById("api-key-input").value.trim();
+        let val = document.getElementById("api-key-input").value.trim();
+        val = val.replace(/^api_key\s*[:=]\s*/i, "").trim(); // تنظيف فوري عند الحفظ
         if (!val) return alert("يرجى إدخال مفتاح صحيح!");
         localStorage.setItem("user_gemini_api_key", val);
         alert("تم تحديث وحفظ المفتاح بنجاح! ✅");
@@ -93,7 +97,6 @@ async function callGeminiStream(promptText, onChunk) {
         throw new Error("⚠️ يرجى إدخال مفتاح الـ API أولاً من زر الإعدادات (⚙️) بالأعلى.");
     }
 
-    // استخدام النموذج المحدث والمستقر
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     
     try {
