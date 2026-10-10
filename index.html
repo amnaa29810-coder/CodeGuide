@@ -9,13 +9,16 @@
 <body>
 
     <div class="container">
-        <!-- الهيدر العلوي المتناسق -->
+        <!-- الهيدر العلوي المتناسق مع زر الإعدادات الجديد -->
         <div class="main-header">
             <div class="header-text-container">
                 <h1>البرمجة المباشرة</h1>
                 <p>موسوعة الأدوات والتحليل السريع للمشاريع والقواعد</p>
             </div>
-            <button id="btn-glossary-sidebar" class="dict-btn">📖 قاموس المصطلحات</button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <button id="btn-settings" class="settings-btn" title="إعدادات مفتاح الـ API">⚙️ الإعدادات</button>
+                <button id="btn-glossary-sidebar" class="dict-btn">📖 قاموس المصطلحات</button>
+            </div>
         </div>
 
         <!-- البحث السريع -->
