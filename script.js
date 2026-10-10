@@ -1,8 +1,49 @@
 // ==========================================
-// 1. مفتاح الـ API المشفر وتشفير Base64
+// 1. إدارة مفتاح الـ API عبر الذاكرة المحلية (LocalStorage)
 // ==========================================
-const part1 = "QVEuQWI4Uk42TXVtZHZUQjVXZzhYLWxHODExdGlnZG9OcktOSjJHYW5DQ2VnVjg4a0Nramc=";
-const GEMINI_API_KEY = atob(part1).trim().replace(/\s+/g, '');
+function getApiKey() {
+    return localStorage.getItem("user_gemini_api_key") || "";
+}
+
+function openSettingsModal() {
+    const currentKey = getApiKey();
+    const htmlContent = `
+        <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
+            <p style="font-size:13px; color:#475569; line-height:1.6;">
+                لإستخدام ميزات الذكاء الاصطناعي والتحليل الفوري، يرجى إدخال مفتاح الـ API الخاص بك. يتم حفظ المفتاح بشكل آمن في متصفحك فقط.
+            </p>
+            
+            <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
+                💡 لا تملك مفتاحاً؟ يمكنك الحصول عليه مجاناً بسهولة من موقع جوجل الرسمي:
+                <br><a href="https://aistudio.google.com/" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">🔗 اضغط هنا لفتح Google AI Studio وإنشاء مفتاح</a>
+            </div>
+
+            <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API الخاص بك:</label>
+            <input type="password" id="api-key-input" value="${currentKey}" placeholder="ألصق المفتاح هنا (AIzaSy...)" 
+                   style="width:100%; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; background:#f8fafc; direction:ltr; text-align:left;">
+
+            <div style="display:flex; gap:8px; margin-top:5px;">
+                <button id="save-api-key-btn" style="flex:1; padding:11px; background:#059669; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">💾 حفظ المفتاح</button>
+                <button id="clear-api-key-btn" style="padding:11px 16px; background:#ef4444; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">حذف</button>
+            </div>
+        </div>
+    `;
+    showModal("⚙️ إعدادات مفتاح الذكاء الاصطناعي", htmlContent);
+
+    document.getElementById("save-api-key-btn").onclick = () => {
+        const val = document.getElementById("api-key-input").value.trim();
+        if (!val) return alert("يرجى إدخال مفتاح صحيح!");
+        localStorage.setItem("user_gemini_api_key", val);
+        alert("تم حفظ المفتاح بنجاح! ✅");
+        hideModal();
+    };
+
+    document.getElementById("clear-api-key-btn").onclick = () => {
+        localStorage.removeItem("user_gemini_api_key");
+        document.getElementById("api-key-input").value = "";
+        alert("تم حذف المفتاح المحفوظ.");
+    };
+}
 
 // ==========================================
 // 2. التحكم بالنافذة المنبثقة (Modal)
@@ -43,14 +84,20 @@ function formatMarkdown(text) {
 }
 
 // ==========================================
-// 3. الاتصال بـ Gemini API (gemini-1.5-flash)
+// 3. الاتصال بـ Gemini API الديناميكي
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
-    const models = ["gemini-1.5-flash", "gemini-pro"];
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        openSettingsModal();
+        throw new Error("⚠️ لم تقم بإدخال مفتاح الـ API. يرجى إدخاله في نافذة الإعدادات التي ظهرت لك.");
+    }
+
+    const models = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"];
     let lastError = null;
 
     for (const model of models) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
         try {
             const response = await fetch(url, {
@@ -106,35 +153,6 @@ function toggleFavorite(title, content) {
     }
 
     localStorage.setItem("appFavorites", JSON.stringify(favorites));
-}
-
-function openFavoritesModal() {
-    const favorites = getFavorites();
-    if (favorites.length === 0) {
-        showModal("⭐ المفضلة", "<p style='text-align:center; padding:20px; color:#64748b;'>لا توجد عناصر محفوظة في المفضلة حالياً.</p>");
-        return;
-    }
-
-    let content = `<div style="max-height:350px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
-    favorites.forEach((item, index) => {
-        content += `
-            <div class="fav-item" data-index="${index}" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; cursor:pointer; text-align:right;">
-                <div style="font-size:11px; color:#f59e0b; margin-bottom:4px;">⭐ ${item.date}</div>
-                <div style="font-weight:bold; color:#1e293b; font-size:13.5px;">${item.title}</div>
-            </div>
-        `;
-    });
-    content += `</div>`;
-
-    showModal("⭐ العناصر المفضلة", content);
-
-    document.querySelectorAll(".fav-item").forEach(el => {
-        el.onclick = () => {
-            const idx = el.getAttribute("data-index");
-            const selected = favorites[idx];
-            renderAIResponse(selected.title, selected.content);
-        };
-    });
 }
 
 function openHistoryModal() {
@@ -239,7 +257,7 @@ function renderAIResponse(title, rawText) {
 }
 
 // ==========================================
-// 6. دوال الموسوعات والقواميس المساعدة
+// 6. دوال الموسوعات والقواميس Mساعدة
 // ==========================================
 function showCategoryLanguages(category) {
     let html = `
@@ -311,6 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
         window.onclick = (e) => {
             if (e.target === modal) hideModal();
         };
+    }
+
+    // ربط زر الإعدادات الجديد
+    const btnSettings = document.getElementById("btn-settings");
+    if (btnSettings) {
+        btnSettings.onclick = openSettingsModal;
     }
 
     const searchInput = document.getElementById("search-input");
