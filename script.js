@@ -3,7 +3,6 @@
 // ==========================================
 function getApiKey() {
     let rawKey = localStorage.getItem("user_gemini_api_key") || "";
-    // تنظيف المفتاح تلقائياً من أي كلمات زائدة
     rawKey = rawKey.replace(/^api_key\s*[:=]\s*/i, "").trim();
     return rawKey;
 }
@@ -13,8 +12,7 @@ function openSettingsModal() {
     const htmlContent = `
         <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-                أدخلي مفتاح الـ API الجديد الخاص بك. 
-                <br><strong style="color:#ef4444;">ملاحظة مهمة:</strong> إذا كان مشروعك القديم معطلاً في جوجل، يرجى اختيار <b>(Create API key in NEW project)</b> عند إنشاء المفتاح.
+                أدخلي مفتاح الـ API الخاص بك المخزن.
             </p>
             
             <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
@@ -89,7 +87,7 @@ function formatMarkdown(text) {
 }
 
 // ==========================================
-// 3. الاتصال المطور بـ Gemini API (يدعم جميع التنسيقات)
+// 3. الاتصال المطور بـ Gemini API مع معالجة حليفة للنماذج
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
     const apiKey = getApiKey();
@@ -98,37 +96,40 @@ async function callGeminiStream(promptText, onChunk) {
         throw new Error("⚠️ يرجى إدخال مفتاح الـ API أولاً من زر الإعدادات (⚙️) بالأعلى.");
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "x-goog-api-key": apiKey
-            },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }]
-            })
-        });
+    // تجربة أحدث النماذج المتاحة بترتيب الاستقرار
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    let lastError = "";
 
-        if (response.ok) {
-            const data = await response.json();
-            const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
-            if (onChunk) onChunk(fullText);
-            return fullText;
-        }
-
-        const errData = await response.json().catch(() => ({}));
+    for (const model of models) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
-        if (response.status === 403 || (errData.error && errData.error.message.includes("suspended"))) {
-            throw new Error("المشروع المرتبط بهذا المفتاح معطل في جوجل. يرجى الضغط على زر الإعدادات وإنشاء مفتاح في مشروع جديد (Create API key in NEW project).");
-        }
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": apiKey
+                },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
+            });
 
-        throw new Error(errData.error?.message || `خطأ في الاتصال (${response.status})`);
-    } catch (err) {
-        throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${err.message}`);
+            if (response.ok) {
+                const data = await response.json();
+                const fullText = data.candidates?.[0]?.content?.parts?.[0]?.text || "لم يتم الحصول على إجابة.";
+                if (onChunk) onChunk(fullText);
+                return fullText;
+            }
+
+            const errData = await response.json().catch(() => ({}));
+            lastError = errData.error?.message || `خطأ (${response.status})`;
+        } catch (err) {
+            lastError = err.message;
+        }
     }
+
+    throw new Error(`تعذر الاتصال بالذكاء الاصطناعي: ${lastError}`);
 }
 
 function prepareFastModal(title) {
