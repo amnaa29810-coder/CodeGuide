@@ -1,9 +1,15 @@
 // ==========================================
-// 1. إدارة مفتاح الـ API وتنقيتها تلقائياً
+// 1. إدارة مفتاح الـ API والتنقية الذكية
 // ==========================================
 function getApiKey() {
     let rawKey = localStorage.getItem("user_gemini_api_key") || "";
+    // تنظيف الكلمات الزائدة إن وجدت
     rawKey = rawKey.replace(/^api_key\s*[:=]\s*/i, "").trim();
+
+    // إذا كان المفتاح هو المفتاح المحظور القديم، نرفضه فوراً
+    if (rawKey.includes("AQ.Ab8RN6")) {
+        return "";
+    }
     return rawKey;
 }
 
@@ -12,21 +18,21 @@ function openSettingsModal() {
     const htmlContent = `
         <div style="display:flex; flex-direction:column; gap:14px; text-align:right;">
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-                أدخلي مفتاح الـ API الخاص بك المخزن.
+                يرجى إدخال مفتاح API فعال. إذا ظهر لك خطأ الحظر، يرجى إنشاء مفتاح جديد عبر زر (Create API key in NEW project).
             </p>
             
             <div style="background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; font-size:12.5px;">
-                🔗 للحصول على مفتاح جديد مجاناً:
-                <br><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">اضغط هنا لفتح Google AI Studio</a>
+                🔗 رابط إنشاء مفتاح جديد مجاناً:
+                <br><a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:6px;">فتح Google AI Studio</a>
             </div>
 
             <label style="font-size:13px; font-weight:bold; color:#1e293b;">مفتاح الـ API:</label>
-            <input type="text" id="api-key-input" value="${currentKey}" placeholder="ألصقي المفتاح هنا..." 
+            <input type="text" id="api-key-input" value="${currentKey}" placeholder="ألصقي المفتاح الجديد هنا..." 
                    style="width:100%; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; outline:none; font-size:13px; background:#f8fafc; direction:ltr; text-align:left;">
 
             <div style="display:flex; gap:8px; margin-top:5px;">
                 <button id="save-api-key-btn" style="flex:1; padding:11px; background:#059669; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">💾 حفظ المفتاح</button>
-                <button id="clear-api-key-btn" style="padding:11px 16px; background:#ef4444; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">حذف القديم</button>
+                <button id="clear-api-key-btn" style="padding:11px 16px; background:#ef4444; color:#fff; border:none; border-radius:10px; font-weight:bold; font-size:13px; cursor:pointer;">مسح البيانات</button>
             </div>
         </div>
     `;
@@ -35,16 +41,23 @@ function openSettingsModal() {
     document.getElementById("save-api-key-btn").onclick = () => {
         let val = document.getElementById("api-key-input").value.trim();
         val = val.replace(/^api_key\s*[:=]\s*/i, "").trim();
-        if (!val) return alert("يرجى إدخال مفتاح صحيح!");
+        
+        if (!val) {
+            return alert("يرجى إدخال مفتاح صحيح!");
+        }
+        if (val.includes("AQ.Ab8RN6")) {
+            return alert("هذا المفتاح محظور سابقاً من جوجل! يرجى إنشاء مفتاح جديد في مشروع جديد (NEW project).");
+        }
+
         localStorage.setItem("user_gemini_api_key", val);
-        alert("تم تحديث وحفظ المفتاح بنجاح! ✅");
+        alert("تم حفظ المفتاح بنجاح! ✅");
         hideModal();
     };
 
     document.getElementById("clear-api-key-btn").onclick = () => {
         localStorage.removeItem("user_gemini_api_key");
         document.getElementById("api-key-input").value = "";
-        alert("تم حذف المفتاح تماماً.");
+        alert("تم مسح المفتاح المخزن.");
     };
 }
 
@@ -87,17 +100,17 @@ function formatMarkdown(text) {
 }
 
 // ==========================================
-// 3. الاتصال المطور بـ Gemini API مع معالجة حليفة للنماذج
+// 3. الاتصال الذكي بـ Gemini API
 // ==========================================
 async function callGeminiStream(promptText, onChunk) {
     const apiKey = getApiKey();
     if (!apiKey) {
         openSettingsModal();
-        throw new Error("⚠️ يرجى إدخال مفتاح الـ API أولاً من زر الإعدادات (⚙️) بالأعلى.");
+        throw new Error("⚠️ لم يتم إدخال مفتاح فعال. اضغطي على زر الإعدادات (⚙️) في الأعلى وادخلي مفتاح جديد.");
     }
 
-    // تجربة أحدث النماذج المتاحة بترتيب الاستقرار
-    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    // تجربة أكثر النماذج استقراراً بالترتيب
+    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash", "gemini-pro"];
     let lastError = "";
 
     for (const model of models) {
@@ -107,8 +120,7 @@ async function callGeminiStream(promptText, onChunk) {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { 
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": apiKey
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: promptText }] }]
@@ -124,8 +136,16 @@ async function callGeminiStream(promptText, onChunk) {
 
             const errData = await response.json().catch(() => ({}));
             lastError = errData.error?.message || `خطأ (${response.status})`;
+            
+            // إذا كان الخطأ بسبب حظر المفتاح
+            if (response.status === 403 || (errData.error && errData.error.message.includes("suspended"))) {
+                localStorage.removeItem("user_gemini_api_key");
+                openSettingsModal();
+                throw new Error("المفتاح الذي استخدمتيه معطل أو محظور من جوجل. يرجى إنشاء مفتاح جديد في مشروع جديد.");
+            }
         } catch (err) {
             lastError = err.message;
+            if (err.message.includes("معطل أو محظور")) throw err;
         }
     }
 
@@ -327,7 +347,7 @@ function showGlossaryStyleModal(title, dataList) {
 }
 
 // ==========================================
-// 7. ربط وتفعيل كافة الأزرار عند التحميل
+// 7. ربط وتفعيل الأزرار
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     const { closeModal, modal } = getModalElements();
